@@ -3,51 +3,161 @@
   "sounds": {
     "cuckoo": {
       "file": "cuckoo.mp3",
-      "durationSeconds": 0.914,
-      "peakDb": -8.4,
-      "generatedAt": "2026-08-05T06:31:47.015Z"
+      "durationSeconds": 0.465,
+      "peakDb": -1,
+      "generatedAt": "2026-08-05T06:31:47.015Z",
+      "note": "durationSeconds was wrong since the very first commit (said 0.914, actual file is 0.465 and matches none of _candidates/cuckoo-*.mp3 either); corrected during a later quality pass, file itself untouched"
     },
     "strike": {
       "file": "strike.mp3",
       "durationSeconds": 1.412,
-      "peakDb": -1.7,
+      "peakDb": -0.9,
       "generatedAt": "2026-08-05T06:31:47.015Z"
     },
     "tick": {
       "file": "tick.mp3",
       "durationSeconds": 0.233,
-      "peakDb": -1.9,
+      "peakDb": -0.8,
       "generatedAt": "2026-08-05T06:31:47.015Z"
     },
     "tock": {
       "file": "tock.mp3",
-      "durationSeconds": 0.5,
-      "peakDb": -1.9,
-      "generatedAt": "2026-08-05T06:31:47.015Z"
+      "durationSeconds": 0.203,
+      "peakDb": -0.9,
+      "generatedAt": "2026-08-05T19:50:35.645Z",
+      "note": "regenerated a 4th time after user feedback (too bassy/long, like an 808 tom drum); see analogPassRound2 note below"
     },
     "door": {
       "file": "door.mp3",
       "durationSeconds": 1.374,
-      "peakDb": -1.8,
+      "peakDb": -0.9,
       "generatedAt": "2026-08-05T06:31:47.015Z"
     },
     "latch": {
       "file": "latch.mp3",
       "durationSeconds": 0.414,
-      "peakDb": -2.1,
+      "peakDb": -1.1,
       "generatedAt": "2026-08-05T06:31:47.015Z"
     },
     "wind": {
       "file": "wind.mp3",
-      "durationSeconds": 3.886,
-      "peakDb": -11.7,
-      "generatedAt": "2026-08-05T06:31:47.015Z"
+      "durationSeconds": 3.791,
+      "peakDb": -1,
+      "generatedAt": "2026-08-05T18:22:51.894Z",
+      "note": "regenerated take, see windFix below"
     },
     "music": {
       "file": "music.mp3",
-      "durationSeconds": 14,
-      "peakDb": -12.1,
-      "generatedAt": "2026-08-05T06:31:47.015Z"
+      "durationSeconds": 9.141,
+      "peakDb": -1,
+      "generatedAt": "2026-08-05T18:22:51.895Z",
+      "note": "regenerated take, see musicIssue below"
+    },
+    "cardinalCall": {
+      "file": "cardinalCall.mp3",
+      "durationSeconds": 1.448,
+      "peakDb": -1,
+      "generatedAt": "2026-08-05T18:57:27.065Z"
+    },
+    "cardinalTick": {
+      "file": "cardinalTick.mp3",
+      "durationSeconds": 0.326,
+      "peakDb": -1,
+      "generatedAt": "2026-08-05T18:57:27.066Z"
+    },
+    "cardinalTock": {
+      "file": "cardinalTock.mp3",
+      "durationSeconds": 0.5,
+      "peakDb": -1,
+      "generatedAt": "2026-08-05T19:18:36.908Z",
+      "note": "regenerated a 2nd time after the user Finder-red-tagged it as too digital/clean sounding; see analogPass note below"
+    },
+    "redwingCall": {
+      "file": "redwingCall.mp3",
+      "durationSeconds": 1.357,
+      "peakDb": -1,
+      "generatedAt": "2026-08-05T19:22:19.860Z",
+      "note": "regenerated a 2nd time after the user Finder-red-tagged it as too digital/clean sounding; see analogPass note below"
+    },
+    "redwingTick": {
+      "file": "redwingTick.mp3",
+      "durationSeconds": 0.257,
+      "peakDb": -1,
+      "generatedAt": "2026-08-05T18:57:27.066Z"
+    },
+    "redwingTock": {
+      "file": "redwingTock.mp3",
+      "durationSeconds": 0.5,
+      "peakDb": -0.8,
+      "generatedAt": "2026-08-05T19:18:36.908Z",
+      "note": "regenerated a 2nd time after the user Finder-red-tagged it as too digital/clean sounding; see analogPass note below"
+    },
+    "robinCall": {
+      "file": "robinCall.mp3",
+      "durationSeconds": 1.818,
+      "peakDb": -1,
+      "generatedAt": "2026-08-05T18:58:22.286Z"
+    },
+    "robinTick": {
+      "file": "robinTick.mp3",
+      "durationSeconds": 0.373,
+      "peakDb": -1,
+      "generatedAt": "2026-08-05T18:58:22.286Z"
+    },
+    "robinTock": {
+      "file": "robinTock.mp3",
+      "durationSeconds": 0.5,
+      "peakDb": -1,
+      "generatedAt": "2026-08-05T19:22:19.861Z",
+      "note": "regenerated a 3rd time after the user Finder-yellow-tagged it for a persistent hum bed; see analogPass note below"
+    },
+    "chickadeeCall": {
+      "file": "chickadeeCall.mp3",
+      "durationSeconds": 1.328,
+      "peakDb": -1,
+      "generatedAt": "2026-08-05T19:22:19.861Z",
+      "note": "regenerated a 2nd time after the user Finder-red-tagged it as too digital/clean sounding; see analogPass note below"
+    },
+    "chickadeeTick": {
+      "file": "chickadeeTick.mp3",
+      "durationSeconds": 0.218,
+      "peakDb": -1,
+      "generatedAt": "2026-08-05T18:58:22.286Z"
+    },
+    "chickadeeTock": {
+      "file": "chickadeeTock.mp3",
+      "durationSeconds": 0.5,
+      "peakDb": -1,
+      "generatedAt": "2026-08-05T18:58:22.286Z"
+    },
+    "doveCall": {
+      "file": "doveCall.mp3",
+      "durationSeconds": 1.695,
+      "peakDb": -1,
+      "generatedAt": "2026-08-05T18:58:50.888Z"
+    },
+    "doveTick": {
+      "file": "doveTick.mp3",
+      "durationSeconds": 0.167,
+      "peakDb": -1,
+      "generatedAt": "2026-08-05T18:58:50.888Z"
+    },
+    "doveTock": {
+      "file": "doveTock.mp3",
+      "durationSeconds": 0.245,
+      "peakDb": -1,
+      "generatedAt": "2026-08-05T19:22:19.861Z",
+      "note": "regenerated a 2nd time after the user Finder-red-tagged it as too digital/clean sounding; see analogPass note below"
     }
-  }
+  },
+  "normalizedAt": "2026-08-05T00:00:00.000Z",
+  "normalization": "Raw generations came out of ElevenLabs at wildly different levels (tock alone was ~16dB hotter than tick despite matching peaks). Every clip below is peak-normalized to -1dBFS true peak so the GAIN trim table in src/renderer/audio.js is doing the actual, intentional mixing instead of fighting inconsistent source levels.",
+  "tockFix": "tock.mp3 as generated was not a clean transient like tick.mp3: it decayed only ~10dB over its full 500ms, a slow buzzy resonant tone rather than a dry click, confirmed by ear to sound like a digital thump plus buzz, not a natural clock sound. scripts/generate-sounds.mjs had rendered 3 takes to assets/sounds/_candidates/tock-{1,2,3}.mp3 and its scorer picked tock-1 (byte-identical to tock-2), but tock-3.mp3 was the clean one: fast decay to -35dB by 260ms, matching tick.mp3's profile. tock.mp3 is now that take (peak-normalized, light fade-out on the tail), and the scorer's gap is real: it never checks that a take actually decays, only peak/onsets/duration, so a future regeneration run could pick a bad take again.",
+  "rootCauseFound": "wind.mp3 and music.mp3's original 'blip then true digital silence' defect (and the 4 fresh wind takes that failed identically on the first regeneration attempt) traced to a real bug in scripts/generate-sounds.mjs's clean() step, not the ElevenLabs API: it applied afade=t=out:st=0:d=0.03, which fades the WHOLE clip to silence starting at time zero (afade's st is absolute from stream start, not relative to the end) and holds it there, confirmed with a synthetic sine tone test where everything past 30ms measured true digital silence. Short one-shots (tick, cuckoo, strike, door, latch) survived this basically unnoticed because their natural decay was already mostly finished within that window; anything with real content lasting more than ~30ms (a multi-second ratchet, a melody) was almost entirely erased. Fixed in clean(): it now probes the trimmed clip's real duration and computes the fade's start point from that, instead of hardcoding 0.",
+  "windFix": "Regenerated through the fixed pipeline: node scripts/generate-sounds.mjs wind. Real 4-onset ratchet content across the full 3.79s this time (verified by spectrogram), peak-normalized to -1dBFS. GAIN.wind unchanged at 0.5.",
+  "musicIssue": "Also traced to the same afade bug as wind, not an ElevenLabs duration limit as first suspected. Regenerated through the fixed pipeline at a shorter, more reliable 10s ask (node scripts/generate-sounds.mjs music, 5 takes): the winning take has real melodic content the full 9.14s with a natural tail-off in the last half second, peak-normalized to -1dBFS. musicMs in src/main/chime.js updated from 14_000 to 9_000 to match. GAIN.music raised from 0.5 to 0.75 since it plays solo (door already shut, calls long over by the time it starts) rather than fighting other sounds for space.",
+  "birdProfiles": "6 selectable birds added, each with its own call and its own tick/tock pair (cardinal*, redwing*, robin*, chickadee*, dove*; the original cuckoo/tick/tock stayed as-is and is the 'cuckoo' profile). Generated through the now-fixed pipeline (node scripts/generate-sounds.mjs <name> per sound), 15 sounds across 3 batches, all measured clean, no repeat of the tock/wind/music failure modes; doveTock's own first take was in fact auto-rejected by the new tickTockScore decay check mid-run, exactly the class of bug that shipped the original bad tock, so that guard is already paying for itself. Every file peak-normalized to -1dBFS to match the rest of the set (doveTock needed a second, more conservative pass: the first normalization pass landed it at exactly 0.0dBFS post mp3-encode, a real risk of inter-sample-peak clipping on some playback paths despite the source measuring -1.0dB pre-encode, so it now sits at -0.2dB with real margin). GAIN entries for all 15 tuned by the same measure-then-set-an-intentional-mix approach as the original set: every call's effective loudness landed within 1.1dB of the default cuckoo call, every tick/tock within 0.7dB of the default tick, so switching birds should not require re-touching the volume slider. Backend/audio is Claude's side of this feature per the project's Claude-does-backend/Kimi-does-frontend split; the bird picker UI itself is Kimi's, this only wires a working birdProfile setting and a native tray menu picker so the feature is functionally complete and testable without it.",
+  "analogPass": "User marked 7 files red in Finder (tock, cardinalTock, redwingTock, redwingCall, robinTock, chickadeeCall, doveTock) as too digital/clean sounding, not analog or realistic, despite all of them measuring as technically clean, well-decayed transients. This is a real limitation of pure ffmpeg measurement, decay curves and peak levels cannot detect timbral character. Pattern in what got flagged: short, simple, low-complexity sounds (dry knocks, two-note calls), exactly the content an AI generator is most likely to render as a clean synth blip rather than something with acoustic grain, versus longer/denser takes (cuckoo call, strike, wind, music) which apparently read as more real. Regenerated all 7 with two prompt changes: added explicit 'recorded on real tape with natural room tone and a touch of mechanical imperfection, organic and analog in character, distinctly not a synthesized or digital sounding tone' framing, and lowered prompt_influence (tick/tock 0.85 to 0.7, calls 0.8 to 0.65) on the theory that high influence pushes the model toward a literal, idealized (and so more synthetic sounding) rendition of the text rather than a naturally varied one. Also bumped takes from 3/4 to 5 for better odds. tock's regeneration again had 2 of 5 takes auto-rejected by the decay scorer, and chickadeeCall had 1 of 5 rejected, both working as intended. All 7 re-verified for decay (well past the 22dB threshold) and re-normalized to -1dBFS, GAIN retuned to the same effective-loudness targets as before.",
+  "analogPassRound2": "2 of the 7 (tock, robinTock) came back yellow-tagged instead of cleared: still too digital, and now with an audible buzz/hum underneath. Root cause found by spectrogram and by comparing every candidate take, not just the shipped one: the 'natural room tone' phrase added in round 1 is, read literally, a request for a persistent background noise bed, and the model apparently took it that way. Both takes had a fine transient but a tail that plateaued at -16 to -30dB instead of decaying toward true silence, where every clean shipped tick/tock actually sits at -47 to -60dB, quiet but constant rather than fading, which reads as hum/hiss rather than a clean cutoff. This slipped past the existing tickTockScore because that scorer's decay check was relative to the take's own peak (tailDb vs peakDb - 22), and a quiet-but-constant hum can still be 20+dB under a loud peak while never approaching real silence. Fixed properly, not just patched: tickTockScore now also has an absolute floor (tailDb > -40 rejects outright) calibrated against every clean shipped tick/tock's actual measured tail, and measure()'s tail window widened from the final 20% to the final 40% of the file for a more honest average that a hum bed cannot hide inside. For the actual regeneration: dropped 'natural room tone' from tock's prompt, added explicit 'no hiss, no hum, no background noise', bumped tock to 6 takes given this was its 3rd attempt (3 of 6 passed both decay checks this time, picked the one with the deepest, most consistently decaying tail of the three, not just whichever the scorer returned first). robinTock did not need a new API call at all: of its original 5 candidates from the flagged batch, take 4 (never chosen, buried in _candidates/) was already clean, tail decaying cleanly to -55dB, so it was swapped in directly, the same move that fixed the very first tock bug this session. Both re-verified by spectrogram (dark, quiet tail matching every clean reference, no continuous mid-level haze), re-peak-normalized, GAIN retuned. tock's new tail is honest: it decays continuously and monotonically (no plateau) but only reaches about -37dB by the end of its 500ms window, not as deep as robinTock's -55dB or the very best reference tocks, still measurably and structurally different from the flagged hum (which never dropped below -16dB and did not continue decaying), but worth flagging that it may not be the single cleanest tock possible if this comes back for a 4th round. As with the rest of this session's audio work, whether either of these actually sounds right is unconfirmed, this environment cannot play sound, only measure it.",
+  "analogPassRound3": "tock came back a 4th time, this time as direct user feedback rather than a Finder tag: 'still way too bassy and long, sounds like hitting an 808 tom drum sample, not organic'. This was a real prompt problem, not a scorer problem: round 3's text was 'a deep dry wooden knock, darker and lower than a tick, with the natural asymmetry and harmonic warmth of a real physical wood knock', which pushes hard on depth/darkness/knock framing, exactly the ingredients for a booming low-frequency percussion hit rather than a crisp click. The user's own diagnosis and fix: swap the literal word tock for clack (tock as a word likely carries its own bell/gong connotation to the model) and stop emphasizing bass/depth beyond the lower counterpart to a tick. Implemented: new text drops deep/darker and lower/knock entirely in favor of a dry short wooden clack, crisp and brief, not deep, not bassy, not a drum hit, not a resonant boom. Also tightened maxDuration from 0.5 to 0.35 (the 808-tom complaint was partly literal duration, the file really was sustaining for the full 500ms) and raised prompt_influence from 0.7 back to 0.75, on the theory that round 3's lower influence gave the model too much latitude to drift toward an unrelated percussion instrument. Separately, while implementing this, found and fixed a real bug: tick and tock had never been migrated to the shared tickTockScore function when it was introduced, they still had their own hand-written duplicate scorer from before that refactor, missing the analogPassRound2 absolute tail-floor fix entirely. This means round 3's tock regeneration ran WITHOUT that guard active despite the code appearing to have it, a false sense of security. Both now reference tickTockScore directly, as every bird tick/tock already did. Result: the new take is 0.20s (much shorter, close to tick's own natural length) with a tail decaying to -58dB, matching or beating every clean reference, and a spectrogram showing energy concentrated in the 3.5 to 8kHz click range rather than low-frequency drum territory. Re-peak-normalized, GAIN retuned. Unconfirmed by ear, same caveat as everything else."
 }

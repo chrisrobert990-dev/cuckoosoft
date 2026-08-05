@@ -1,11 +1,74 @@
-/* Placeholder. Replaced by the visual layer. */
+/* Cuckoo clock visual layer.
+   The window is frameless and transparent: nothing here may paint a page
+   background. Only the clock itself is visible, and the case draws its own
+   shadow inside the SVG. */
+
 * { margin: 0; padding: 0; box-sizing: border-box; }
-html, body { width: 100%; height: 100%; background: transparent; overflow: hidden;
-  font: 13px/1.5 -apple-system, system-ui, sans-serif; color: #f3e6cf; user-select: none; }
-#stage { width: 100%; height: 100%; display: grid; place-items: center; }
-.probe { background: #2b1c10; border: 2px solid #7a5326; border-radius: 12px;
-  padding: 18px 22px; text-align: center; min-width: 260px; }
-.probe h1 { font-size: 34px; font-variant-numeric: tabular-nums; letter-spacing: 1px; }
-.probe p { opacity: .75; font-size: 12px; margin-top: 6px; }
-.probe button { margin: 10px 4px 0; padding: 6px 10px; border-radius: 8px; border: 1px solid #7a5326;
-  background: #3b2715; color: #f3e6cf; font-size: 12px; }
+
+html, body {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  font-family: Georgia, 'Times New Roman', serif;
+}
+
+#stage {
+  position: fixed;
+  inset: 0;
+}
+
+#stage svg#cuckoo-clock {
+  width: 100%;
+  height: 100%;
+  display: block;
+  transform-origin: 50% 0%;
+  will-change: transform;
+}
+
+/* Cursor language: plain woodwork is grabbable for moving the window, and
+   every mechanism the owner can touch gets a hand or a grab of its own. */
+.ck-case  { cursor: grab; }
+.ck-case:active { cursor: grabbing; }
+.ck-click { cursor: pointer; }
+.ck-grab  { cursor: grab; }
+.ck-grab:active { cursor: grabbing; }
+
+/* A warm lift on hover hints that a part is touchable. The filter only runs
+   on hover state changes, never per frame. */
+.ck-click:hover, .ck-grab:hover {
+  filter: brightness(1.14) saturate(1.05);
+}
+
+/* The corner resize handle: nothing at all until the cursor finds it, then a
+   pair of brass rules catching the same light as the case fittings. */
+.ck-resize { cursor: nwse-resize; }
+
+.ck-grip-marks {
+  opacity: 0;
+  transition: opacity 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.ck-resize:hover .ck-grip-marks { opacity: 0.9; }
+.ck-resize:active .ck-grip-marks { opacity: 1; }
+
+/* While the window is click through, hover affordances must disappear. */
+svg#cuckoo-clock.ct .ck-case,
+svg#cuckoo-clock.ct .ck-click,
+svg#cuckoo-clock.ct .ck-grab,
+svg#cuckoo-clock.ct .ck-case:active,
+svg#cuckoo-clock.ct .ck-grab:active,
+svg#cuckoo-clock.ct .ck-resize {
+  cursor: default;
+}
+
+svg#cuckoo-clock.ct .ck-click:hover,
+svg#cuckoo-clock.ct .ck-grab:hover {
+  filter: none;
+}
+
+/* No handle to grab while the clock cannot be clicked at all. */
+svg#cuckoo-clock.ct .ck-resize { pointer-events: none; }
+svg#cuckoo-clock.ct .ck-resize:hover .ck-grip-marks { opacity: 0; }

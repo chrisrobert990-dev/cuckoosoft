@@ -16,7 +16,7 @@ const T = {
   birdOut: 520,       // how long the bird stays proud of the door
   doorClose: 900,     // after the last call finishes
   beforeMusic: 700,
-  musicMs: 14_000,
+  musicMs: 9_000, // matches music.mp3's real length, see assets/sounds/manifest.json
 };
 
 /**

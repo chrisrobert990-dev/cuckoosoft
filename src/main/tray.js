@@ -2,6 +2,7 @@
 
 const { Tray, Menu, app, nativeImage } = require('electron');
 const path = require('node:path');
+const { BIRD_PROFILES, BIRD_LABELS } = require('./settings');
 
 const SCALES = [
   ['Small', 0.7],
@@ -37,7 +38,14 @@ function buildMenuTemplate(ctx) {
   const weightPct = (t) => pct(movement.weights[t]);
 
   return [
-    { label: `Cuckoo — ${status}`, enabled: false },
+    { label: `CuckooSoft, ${status}`, enabled: false },
+    { type: 'separator' },
+
+    {
+      label: 'Quick settings',
+      accelerator: 'CommandOrControl+Shift+K',
+      click: () => ctx.showPanel(),
+    },
     { type: 'separator' },
 
     {
@@ -52,6 +60,17 @@ function buildMenuTemplate(ctx) {
       type: 'checkbox',
       checked: s.silent,
       click: () => settings.toggle('silent'),
+    },
+    { type: 'separator' },
+
+    {
+      label: `Bird: ${BIRD_LABELS[s.birdProfile] ?? s.birdProfile}`,
+      submenu: BIRD_PROFILES.map((id) => ({
+        label: BIRD_LABELS[id],
+        type: 'radio',
+        checked: s.birdProfile === id,
+        click: () => settings.set({ birdProfile: id }),
+      })),
     },
     { type: 'separator' },
 
@@ -71,6 +90,12 @@ function buildMenuTemplate(ctx) {
           type: 'checkbox',
           checked: s.halfHourCall,
           click: () => settings.toggle('halfHourCall'),
+        },
+        {
+          label: 'Call on the quarter hour',
+          type: 'checkbox',
+          checked: s.quarterHourCall,
+          click: () => settings.toggle('quarterHourCall'),
         },
         {
           label: 'Wire gong',
@@ -187,13 +212,24 @@ function buildMenuTemplate(ctx) {
       })),
     },
     {
-      label: 'Size',
-      submenu: SCALES.map(([label, v]) => ({
-        label,
-        type: 'radio',
-        checked: Math.abs(s.scale - v) < 0.02,
-        click: () => settings.set({ scale: v }),
-      })),
+      label: `Size (${pct(s.scale)})`,
+      submenu: [
+        ...SCALES.map(([label, v]) => ({
+          label,
+          type: 'radio',
+          checked: Math.abs(s.scale - v) < 0.02,
+          click: () => settings.set({ scale: v }),
+        })),
+        { type: 'separator' },
+        // Free sizing lives on the case itself and in the popover slider; these
+        // are just the two nudges worth having a keystroke for.
+        { label: 'Bigger', accelerator: 'CommandOrControl+Plus', click: () => settings.set({ scale: s.scale * 1.1 }) },
+        { label: 'Smaller', accelerator: 'CommandOrControl+-', click: () => settings.set({ scale: s.scale / 1.1 }) },
+        { label: 'Fit the screen', click: () => ctx.fitScale() },
+        { type: 'separator' },
+        { label: 'Centre on screen', click: () => ctx.centreCase() },
+        { label: 'Drag any edge of the case to resize', enabled: false },
+      ],
     },
     {
       label: 'Window',
@@ -225,6 +261,29 @@ function buildMenuTemplate(ctx) {
       ],
     },
     {
+      label: 'Character',
+      submenu: [
+        {
+          label: 'Patina and aging',
+          type: 'checkbox',
+          checked: s.patinaEnabled,
+          click: () => settings.toggle('patinaEnabled'),
+        },
+        {
+          label: 'Rare quirks',
+          type: 'checkbox',
+          checked: s.quirksEnabled,
+          click: () => settings.toggle('quirksEnabled'),
+        },
+        {
+          label: 'Moon phase on the dial',
+          type: 'checkbox',
+          checked: s.moonPhaseEnabled,
+          click: () => settings.toggle('moonPhaseEnabled'),
+        },
+      ],
+    },
+    {
       label: 'Open at login',
       type: 'checkbox',
       checked: s.launchAtLogin,
@@ -235,7 +294,8 @@ function buildMenuTemplate(ctx) {
     { label: 'Show sound files', click: () => ctx.openSounds() },
     { label: 'Reset everything', click: () => ctx.reset() },
     { type: 'separator' },
-    { label: 'Quit Cuckoo', accelerator: 'Command+Q', click: () => ctx.quit() },
+    { label: 'Restart CuckooSoft', click: () => ctx.restart() },
+    { label: 'Quit CuckooSoft', accelerator: 'Command+Q', click: () => ctx.quit() },
   ];
 }
 
@@ -250,25 +310,25 @@ function createTray(ctx) {
   }
 
   const tray = new Tray(image);
-  tray.setToolTip('Cuckoo');
+  tray.setToolTip('CuckooSoft');
 
-  const refresh = () => {
+  // Deliberately no setContextMenu: attaching one makes macOS swallow the
+  // click event, and left click belongs to the quick settings popover. The
+  // full menu is still one right click away, and the popover links to it.
+  // The menu is built the moment it is asked for rather than on every state
+  // push, because the clock pushes state on every beat of the escapement.
+  tray.on('click', () => ctx.togglePanel(tray.getBounds()));
+
+  tray.on('right-click', () => {
     if (tray.isDestroyed()) return;
-    tray.setContextMenu(Menu.buildFromTemplate(buildMenuTemplate(ctx)));
-  };
-  refresh();
-
-  // Clicking the menu bar icon brings the case back if it wandered off screen.
-  tray.on('double-click', () => {
-    const win = ctx.getWindow();
-    if (win && !win.isDestroyed()) {
-      win.show();
-      win.focus();
-    }
+    tray.popUpContextMenu(Menu.buildFromTemplate(buildMenuTemplate(ctx)));
   });
+
+  const refresh = () => {};
 
   return {
     refresh,
+    bounds: () => tray.getBounds(),
     destroy: () => { if (!tray.isDestroyed()) tray.destroy(); },
   };
 }

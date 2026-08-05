@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <!-- Same lockdown as the clock window: nothing loads from the network, ever. -->
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self';">
+  <title>Cuckoo settings</title>
+  <link rel="stylesheet" href="panel.css">
+</head>
+<body>
+  <!-- The whole popover is measured by the main process, so it must be one
+       block with no margin collapsing surprises. -->
+  <main id="panel">
+    <header class="head">
+      <div class="head-time">
+        <span id="time" class="time">00:00</span>
+        <span id="meridiem" class="meridiem">AM</span>
+      </div>
+      <div class="head-meta">
+        <span id="status" class="status">Running</span>
+        <button id="close" class="ghost-icon" type="button" title="Close" aria-label="Close">
+          <svg viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M4.4 4.4 11.6 11.6M11.6 4.4 4.4 11.6" />
+          </svg>
+        </button>
+      </div>
+      <div class="beat" aria-hidden="true"><span id="beat" class="beat-bob"></span></div>
+    </header>
+
+    <section class="tiles" id="tiles"></section>
+
+    <section class="bird-section">
+      <span class="slider-label bird-title">Bird</span>
+      <div class="birds" id="birds" role="radiogroup" aria-label="Bird"></div>
+    </section>
+
+    <section class="trait-section">
+      <span class="slider-label trait-title">Character</span>
+      <div class="traits" id="traits"></div>
+    </section>
+
+    <section class="sliders">
+      <label class="slider" for="volume">
+        <span class="slider-head">
+          <span class="slider-label">Volume</span>
+          <span class="slider-value" id="volumeValue">70%</span>
+        </span>
+        <input type="range" id="volume" min="0" max="100" step="1" value="70">
+      </label>
+
+      <label class="slider" for="size">
+        <span class="slider-head">
+          <span class="slider-label">Size</span>
+          <span class="slider-value" id="sizeValue">100%</span>
+        </span>
+        <input type="range" id="size" min="20" max="400" step="1" value="100">
+      </label>
+
+      <div class="chips" id="sizeChips"></div>
+      <p class="hint">Or drag any edge of the case</p>
+    </section>
+
+    <section class="actions">
+      <button class="action" type="button" data-action="strike">
+        <svg viewBox="0 0 20 20" aria-hidden="true">
+          <path d="M10 3.2c2.1 0 3.6 1.5 3.6 3.4 0 2.4 1 3.2 1.6 3.9H4.8c.6-.7 1.6-1.5 1.6-3.9 0-1.9 1.5-3.4 3.6-3.4Z" />
+          <path d="M8.3 13.1a1.8 1.8 0 0 0 3.4 0" />
+        </svg>
+        <span>Strike now</span>
+      </button>
+      <button class="action" type="button" data-action="wind">
+        <svg viewBox="0 0 20 20" aria-hidden="true">
+          <path d="M10 3v8.4" />
+          <path d="M7.6 5.1 10 3l2.4 2.1" />
+          <path d="M10 11.4c1.6 0 2.8 1.2 2.8 2.7S11.6 16.8 10 16.8s-2.8-1.2-2.8-2.7 1.2-2.7 2.8-2.7Z" />
+        </svg>
+        <span>Pull chains</span>
+      </button>
+      <button class="action" type="button" data-action="settime">
+        <svg viewBox="0 0 20 20" aria-hidden="true">
+          <circle cx="10" cy="10" r="6.6" />
+          <path d="M10 6.2V10l2.6 1.6" />
+        </svg>
+        <span>System time</span>
+      </button>
+      <button class="action" type="button" data-action="restart">
+        <svg viewBox="0 0 20 20" aria-hidden="true">
+          <path d="M15.9 10a5.9 5.9 0 1 1-1.8-4.2" />
+          <path d="M16 4.4v4.4h-4.4" />
+        </svg>
+        <span>Restart app</span>
+      </button>
+    </section>
+
+    <footer class="foot">
+      <button id="fullMenu" class="link" type="button">All settings</button>
+      <button id="quit" class="link danger" type="button">Quit</button>
+    </footer>
+  </main>
+
+  <script src="panel.js"></script>
+</body>
+</html>

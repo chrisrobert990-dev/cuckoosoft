@@ -1,12 +1,12 @@
 {
-  "name": "cuckoo-clock",
-  "productName": "Cuckoo",
+  "name": "cuckoosoft",
+  "productName": "CuckooSoft",
   "version": "1.0.0",
-  "description": "A Black Forest cuckoo clock that lives on your desktop.",
+  "description": "A hyper-realistic Black Forest cuckoo clock for your desktop. Free and open source.",
   "main": "src/main/main.js",
   "author": "Max Zillion",
-  "license": "UNLICENSED",
-  "private": true,
+  "license": "MIT",
+  "private": false,
   "scripts": {
     "start": "electron .",
     "dev": "CUCKOO_DEV=1 electron .",
@@ -19,8 +19,8 @@
     "electron-builder": "^25.1.8"
   },
   "build": {
-    "appId": "com.maxzillion.cuckoo",
-    "productName": "Cuckoo",
+    "appId": "com.maxzillion.cuckoosoft",
+    "productName": "CuckooSoft",
     "directories": {
       "output": "release",
       "buildResources": "build"

@@ -10,18 +10,99 @@
  * trigger one off sounds through `window.cuckooAudio.play(name)`.
  */
 
-const SOUNDS = ['cuckoo', 'strike', 'tick', 'tock', 'door', 'latch', 'wind', 'music'];
+/**
+ * Every playable bird: which sound files make up its call and its tick/tock
+ * pair. Keys match `settings.js`'s `BIRD_PROFILES` and the tray's radio menu.
+ * The default `cuckoo` entry deliberately reuses the original file basenames
+ * (`cuckoo`/`tick`/`tock`) rather than a renamed trio, so nothing about the
+ * already-tuned, already-shipped default sound had to move when this was
+ * added. Every other bird's own tick/tock is its own file: the character of
+ * the click changes per bird (wood type in the generation prompt), it is not
+ * just the default tick/tock relabeled.
+ */
+const BIRDS = {
+  cuckoo: {
+    label: 'Classic Cuckoo', call: 'cuckoo', tick: 'tick', tock: 'tock',
+  },
+  cardinal: {
+    label: 'Cardinal', call: 'cardinalCall', tick: 'cardinalTick', tock: 'cardinalTock',
+  },
+  redwing: {
+    label: 'Red-winged Blackbird', call: 'redwingCall', tick: 'redwingTick', tock: 'redwingTock',
+  },
+  robin: {
+    label: 'American Robin', call: 'robinCall', tick: 'robinTick', tock: 'robinTock',
+  },
+  chickadee: {
+    label: 'Chickadee', call: 'chickadeeCall', tick: 'chickadeeTick', tock: 'chickadeeTock',
+  },
+  dove: {
+    label: 'Mourning Dove', call: 'doveCall', tick: 'doveTick', tock: 'doveTock',
+  },
+};
 
-/** Per sound trim so one loud sample does not tower over the others. */
+/** Sounds every bird shares: the mechanism, not the bird. */
+const SHARED_SOUNDS = ['strike', 'door', 'latch', 'wind', 'music'];
+
+/** Every sound file that has to be loaded, every bird's plus the shared ones. */
+const SOUNDS = [
+  ...SHARED_SOUNDS,
+  ...Object.values(BIRDS).flatMap((b) => [b.call, b.tick, b.tock]),
+];
+
+/**
+ * Per sound trim so one loud sample does not tower over the others.
+ *
+ * The samples in assets/sounds are peak-normalized (see manifest.json), so
+ * these multipliers are the actual mix rather than compensation for
+ * inconsistent source levels. tock.mp3 originally shipped as a buzzy,
+ * barely-decaying resonant tone (a bad take the generation script's scorer
+ * picked over a cleaner one), replaced with a properly decaying candidate
+ * take, see manifest.json's tockFix note. Its trim is still a bit below
+ * tick's because it reads denser at matched peaks. Every other bird's call
+ * and tick/tock were tuned the same way: measure with ffmpeg, match the
+ * default bird's loudness role (call loudest, tick/tock quiet background),
+ * not just copy the default's numbers, since each take has its own crest
+ * factor.
+ */
 const GAIN = {
   cuckoo: 1,
-  strike: 0.62,
-  tick: 0.3,
-  tock: 0.3,
+  strike: 0.9,
+  tick: 0.35,
+  // tock.mp3 has been regenerated 4 times now (buzzy resonance, then too
+  // digital, then a persistent hum bed, then too bassy/drum-like, see
+  // manifest.json's tockFix and analogPassRound2 notes), retuned fresh each
+  // time for a different take with a different crest factor, not carried
+  // forward from before.
+  tock: 0.25,
   door: 0.45,
-  latch: 0.6,
-  wind: 0.55,
-  music: 0.5,
+  latch: 0.55,
+  wind: 0.5,
+  // music.mp3 plays solo (the door has already shut and the calls are long
+  // over by the time it starts, see chime.js), so it can afford to be more
+  // present than a sound that has to share the mix.
+  music: 0.75,
+
+  cardinalCall: 1,
+  cardinalTick: 0.36,
+  cardinalTock: 0.29,
+  // redwingCall measured louder at matched peak than the other calls (a
+  // denser take), turned down rather than left towering over its own tick/tock.
+  redwingCall: 0.82,
+  redwingTick: 0.43,
+  redwingTock: 0.2,
+  robinCall: 1,
+  robinTick: 0.15,
+  // robinTock swapped to a different candidate from the same generation
+  // batch after the shipped one turned out to have a persistent hum bed
+  // (see manifest.json's analogPass note), quieter/cleaner take, retuned.
+  robinTock: 0.36,
+  chickadeeCall: 0.8,
+  chickadeeTick: 0.2,
+  chickadeeTock: 0.34,
+  doveCall: 0.87,
+  doveTick: 0.3,
+  doveTock: 0.23,
 };
 
 /** Look far enough ahead that a busy frame cannot make the escapement stumble. */
@@ -35,7 +116,9 @@ class CuckooAudio {
     this.buffers = new Map();
     this.loaded = false;
 
-    this.settings = { volume: 0.7, silent: false, tickSound: true };
+    this.settings = {
+      volume: 0.7, silent: false, tickSound: true, birdProfile: 'cuckoo',
+    };
     this.movement = { running: false, beatMs: 500, beatEpoch: Date.now() };
 
     this.nextBeatIndex = 0;
@@ -85,12 +168,18 @@ class CuckooAudio {
 
   // --- State from the main process ---------------------------------------
 
+  /** The active bird's sound set, falling back to the default if settings ever hold something stale. */
+  bird() {
+    return BIRDS[this.settings.birdProfile] ?? BIRDS.cuckoo;
+  }
+
   applyState(state) {
     if (state?.settings) {
       this.settings = {
         volume: state.settings.volume,
         silent: state.settings.silent,
         tickSound: state.settings.tickSound,
+        birdProfile: state.settings.birdProfile,
       };
       if (this.master) {
         const target = this.settings.silent ? 0 : this.settings.volume;
@@ -146,7 +235,7 @@ class CuckooAudio {
 
   /** Slight, natural variation for the bird. */
   playCall() {
-    return this.play('cuckoo', { detune: (Math.random() - 0.5) * 0.035 });
+    return this.play(this.bird().call, { detune: (Math.random() - 0.5) * 0.035 });
   }
 
   playGong() {
@@ -221,7 +310,8 @@ class CuckooAudio {
       const isTick = this.nextBeatIndex % 2 === 0;
 
       if (this.settings.tickSound && !this.settings.silent) {
-        this.play(isTick ? 'tick' : 'tock', { at: when, detune: (Math.random() - 0.5) * 0.02 });
+        const b = this.bird();
+        this.play(isTick ? b.tick : b.tock, { at: when, detune: (Math.random() - 0.5) * 0.02 });
       }
       // The visual layer listens for this so the pendulum turns exactly on the beat.
       this.emit('beat', { index: this.nextBeatIndex, side: isTick ? 'tick' : 'tock', wallAt });

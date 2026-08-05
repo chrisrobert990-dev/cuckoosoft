@@ -9,11 +9,12 @@ const { contextBridge, ipcRenderer } = require('electron');
  * face never has to poll.
  */
 const EVENTS = [
-  'state',        // full snapshot: { settings, movement, chiming }
+  'state',        // full snapshot: { settings, movement, chiming, appStartedAt }
   'sync',         // movement snapshot: offsetMs, serverNow, beatMs, beatEpoch, running, weights...
   'weights',      // { time, strike, music } each 0..1
   'wound',        // 'time' | 'strike' | 'music', a chain was just pulled
   'chime',        // sequencer events, see below
+  'quirk',        // { type: 'peek' | 'stutter' }, a rare unscripted moment, see settings.quirksEnabled
   'scale',        // number, the case was resized
   'clickthrough', // boolean
   'theme',        // { dark: boolean }
@@ -70,6 +71,20 @@ contextBridge.exposeInMainWorld('cuckoo', {
     start: () => ipcRenderer.send('cuckoo:dragStart'),
     end: () => ipcRenderer.send('cuckoo:dragEnd'),
   },
+
+  /**
+   * Same contract for the corner grip. `corner` is a compass string such as
+   * 'se' or 'nw', naming which corner the cursor is dragging.
+   */
+  resize: {
+    start: (corner) => ipcRenderer.send('cuckoo:resizeStart', corner),
+    end: () => ipcRenderer.send('cuckoo:resizeEnd'),
+  },
+
+  /** Size helpers, shared with the menu bar popover. */
+  sizing: () => ipcRenderer.invoke('cuckoo:sizing'),
+  fitHeight: () => ipcRenderer.invoke('cuckoo:fitHeight'),
+  centreCase: () => ipcRenderer.invoke('cuckoo:centreCase'),
 
   /** Pop the full native menu, which mirrors the tray menu exactly. */
   menu: () => ipcRenderer.send('cuckoo:menu'),

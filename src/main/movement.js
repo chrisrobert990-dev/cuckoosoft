@@ -224,14 +224,23 @@ class Movement extends EventEmitter {
 
   // --- Strike scheduling -------------------------------------------------
 
-  /** The next :00 or :30 boundary strictly after `from`, in displayed time. */
+  /**
+   * The next quarter-hour boundary (:00, :15, :30, :45) strictly after `from`,
+   * in displayed time. Scheduling always works in quarters regardless of which
+   * of those the user actually has switched on: `fire()` is what decides
+   * whether a given boundary is worth ringing for.
+   */
   nextBoundary(from = this.displayedNow()) {
     const d = new Date(from);
-    const minutes = d.getMinutes();
     const at = new Date(d);
     at.setSeconds(0, 0);
-    if (minutes < 30) at.setMinutes(30);
-    else { at.setMinutes(0); at.setTime(at.getTime() + HOUR); }
+    const nextQuarter = Math.floor(d.getMinutes() / 15) * 15 + 15;
+    if (nextQuarter >= 60) {
+      at.setMinutes(0);
+      at.setTime(at.getTime() + HOUR);
+    } else {
+      at.setMinutes(nextQuarter);
+    }
     return at.getTime();
   }
 
@@ -282,10 +291,14 @@ class Movement extends EventEmitter {
     if (!this.running) return;
 
     const d = new Date(at);
-    const isHour = d.getMinutes() === 0;
+    const minutes = d.getMinutes();
+    const isHour = minutes === 0;
+    const isHalf = minutes === 30;
+    const isQuarter = minutes === 15 || minutes === 45;
     const hour24 = d.getHours();
 
-    if (!isHour && !this.settings.get('halfHourCall')) return;
+    if (isHalf && !this.settings.get('halfHourCall')) return;
+    if (isQuarter && !this.settings.get('quarterHourCall')) return;
 
     let calls;
     if (isHour) {
@@ -299,13 +312,16 @@ class Movement extends EventEmitter {
     const reason = this.silenceReason(at);
     this.emit('strike', {
       at,
-      kind: isHour ? 'hour' : 'half',
+      kind: isHour ? 'hour' : isHalf ? 'half' : 'quarter',
       calls,
       hour24,
       gong: this.settings.get('gong'),
+      // The music box has always been an hour (and optionally half-hour)
+      // treat, not a quarter-hour one: four minutes of waltz an hour is
+      // plenty without stacking it onto the quarters too.
       music: this.settings.get('musicBox')
         && this.canPlayMusic
-        && (isHour || this.settings.get('musicOnHalfHour')),
+        && (isHour || (isHalf && this.settings.get('musicOnHalfHour'))),
       silencedBy: reason,
     });
   }

@@ -1,0 +1,53 @@
+{
+  "source": "elevenlabs/sound-generation",
+  "sounds": {
+    "cuckoo": {
+      "file": "cuckoo.mp3",
+      "durationSeconds": 0.914,
+      "peakDb": -8.4,
+      "generatedAt": "2026-08-05T06:31:47.015Z"
+    },
+    "strike": {
+      "file": "strike.mp3",
+      "durationSeconds": 1.412,
+      "peakDb": -1.7,
+      "generatedAt": "2026-08-05T06:31:47.015Z"
+    },
+    "tick": {
+      "file": "tick.mp3",
+      "durationSeconds": 0.233,
+      "peakDb": -1.9,
+      "generatedAt": "2026-08-05T06:31:47.015Z"
+    },
+    "tock": {
+      "file": "tock.mp3",
+      "durationSeconds": 0.5,
+      "peakDb": -1.9,
+      "generatedAt": "2026-08-05T06:31:47.015Z"
+    },
+    "door": {
+      "file": "door.mp3",
+      "durationSeconds": 1.374,
+      "peakDb": -1.8,
+      "generatedAt": "2026-08-05T06:31:47.015Z"
+    },
+    "latch": {
+      "file": "latch.mp3",
+      "durationSeconds": 0.414,
+      "peakDb": -2.1,
+      "generatedAt": "2026-08-05T06:31:47.015Z"
+    },
+    "wind": {
+      "file": "wind.mp3",
+      "durationSeconds": 3.886,
+      "peakDb": -11.7,
+      "generatedAt": "2026-08-05T06:31:47.015Z"
+    },
+    "music": {
+      "file": "music.mp3",
+      "durationSeconds": 14,
+      "peakDb": -12.1,
+      "generatedAt": "2026-08-05T06:31:47.015Z"
+    }
+  }
+}

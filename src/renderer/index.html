@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <!--
+    Locked down on purpose: this window loads nothing from the network, so the
+    clock works offline forever and cannot be a foothold for anything.
+  -->
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self'; font-src 'self' data:; connect-src 'self' data:;">
+  <title>Cuckoo</title>
+  <link rel="stylesheet" href="clock.css">
+</head>
+<body>
+  <!-- The visual layer mounts the whole case in here. -->
+  <div id="stage"></div>
+
+  <!-- Backend owned: bellows, gong, escapement, music box. Loads first. -->
+  <script src="audio.js"></script>
+  <!-- Visual layer. -->
+  <script src="clock.js"></script>
+</body>
+</html>

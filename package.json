@@ -1,0 +1,53 @@
+{
+  "name": "cuckoo-clock",
+  "productName": "Cuckoo",
+  "version": "1.0.0",
+  "description": "A Black Forest cuckoo clock that lives on your desktop.",
+  "main": "src/main/main.js",
+  "author": "Max Zillion",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dev": "CUCKOO_DEV=1 electron .",
+    "sounds": "node scripts/generate-sounds.mjs",
+    "dist": "electron-builder --mac --dir",
+    "pack": "electron-builder --mac"
+  },
+  "devDependencies": {
+    "electron": "^38.0.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.maxzillion.cuckoo",
+    "productName": "Cuckoo",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "src/**/*",
+      "assets/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.utilities",
+      "target": [
+        {
+          "target": "dir",
+          "arch": [
+            "arm64"
+          ]
+        }
+      ],
+      "icon": "build/icon.icns",
+      "extendInfo": {
+        "LSUIElement": false,
+        "NSHighResolutionCapable": true
+      }
+    }
+  },
+  "allowScripts": {
+    "electron@38.8.6": true
+  }
+}

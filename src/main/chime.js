@@ -3,16 +3,21 @@
 const EventEmitter = require('node:events');
 
 /**
- * Timings lifted from how a real Black Forest striking train behaves. The bird
- * is shoved out by the same lever that squeezes the bellows, so the door and
- * the first note are nearly simultaneous, and the gong hammer falls in the gap
- * between calls rather than on top of them.
+ * Timings lifted from how a real Black Forest striking train behaves: the
+ * bird is shoved out by the same cam that lifts the bellows and, on a
+ * cuckoo-and-gong movement, the same strike-train stroke that lifts the
+ * bellows also trips the gong hammer, so the two sound together while the
+ * bird is still out. Earlier this fired the gong at 830ms, well after the
+ * bird had already retreated (birdOut is 520ms) into total silence: a
+ * disconnected clang with nothing on screen to have caused it. strike.mp3
+ * measures RMS -50dB by 500ms and -58dB by 750ms, so its decay is not the
+ * constraint; being orphaned after the performance had already ended was.
  */
 const T = {
   doorOpen: 0,
   firstCall: 340,     // door swings, then the bird arrives
   callInterval: 1700, // one cuck-oo per bellows cycle
-  gongOffset: 830,    // hammer falls between two calls
+  gongOffset: 460,    // hammer falls with the call, while the bird is still out
   birdOut: 520,       // how long the bird stays proud of the door
   doorClose: 900,     // after the last call finishes
   beforeMusic: 700,

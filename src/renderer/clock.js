@@ -29,12 +29,12 @@
   // Aged walnut palette. The recesses carry the dark stain, the raised edges
   // carry the worn lighter tone where a century of hands has polished it.
   const C = {
-    woodDeep: '#2e1c0e',
-    woodDark: '#3f2712',
-    wood: '#5d3e22',
-    woodMid: '#6f4c2b',
-    woodLight: '#8a6238',
-    woodEdge: '#a97f4e',
+    woodDeep: '#2a130a',
+    woodDark: '#43200f',
+    wood: '#6b3a1e',
+    woodMid: '#7d4926',
+    woodLight: '#9c6134',
+    woodEdge: '#c08a4d',
     bone: '#ecdfc0',
     boneDim: '#cdbb93',
     brass: '#d9b25f',
@@ -63,6 +63,103 @@
     muteLever: { px: 380, py: 318 },
   };
 
+  // ------------------------------------------------------------------
+  // Gilt fittings.
+  //
+  // Everything below is a turned, cast or drawn piece of gold applied to the
+  // case, and every one of them obeys the same rule the carved woodwork
+  // does: draw the section once in the gilt gradient, then restate it as a
+  // lit run through the upper left and a burnt run through the lower right.
+  // That is the pendulum bob's beaded rim again, in metal. Gold shades to
+  // burnt amber rather than to black, which is the one place the gilt parts
+  // depart from the wood.
+  // ------------------------------------------------------------------
+  const polar = (cx, cy, r, deg) => [
+    fmt(cx + r * Math.cos((deg * Math.PI) / 180)),
+    fmt(cy + r * Math.sin((deg * Math.PI) / 180)),
+  ];
+  const arcPath = (cx, cy, r, a0, a1) => {
+    const [x0, y0] = polar(cx, cy, r, a0);
+    const [x1, y1] = polar(cx, cy, r, a1);
+    return `M ${x0} ${y0} A ${fmt(r)} ${fmt(r)} 0 ${Math.abs(a1 - a0) > 180 ? 1 : 0} 1 ${x1} ${y1}`;
+  };
+
+  /** A turned gilt ring seated in the case: an astragal seen face on. */
+  const goldRing = (cx, cy, r, w) => `
+    <circle cx="${cx}" cy="${cy}" r="${fmt(r)}" fill="none" stroke="url(#gGold)" stroke-width="${fmt(w)}"/>
+    <path d="${arcPath(cx, cy, r - w * 0.2, 168, 330)}" fill="none" stroke="#fff3cd"
+          stroke-width="${fmt(w * 0.3)}" opacity="0.62" stroke-linecap="round"/>
+    <path d="${arcPath(cx, cy, r + w * 0.2, 14, 152)}" fill="none" stroke="#241601"
+          stroke-width="${fmt(w * 0.34)}" opacity="0.5" stroke-linecap="round"/>
+    <circle cx="${cx}" cy="${cy}" r="${fmt(r - w * 0.5)}" fill="none" stroke="#301e03"
+            stroke-width="0.45" opacity="0.55"/>
+    <circle cx="${cx}" cy="${cy}" r="${fmt(r + w * 0.5)}" fill="none" stroke="#301e03"
+            stroke-width="0.45" opacity="0.55"/>`;
+
+  /** A ring of cast gilt beads, the cheapest luxury there is and the oldest. */
+  const goldBeads = (cx, cy, r, br, n) => {
+    let out = '';
+    for (let i = 0; i < n; i += 1) {
+      const a = (i / n) * Math.PI * 2;
+      const x = fmt(cx + Math.cos(a) * r);
+      const y = fmt(cy + Math.sin(a) * r);
+      out += `<circle cx="${x}" cy="${y}" r="${fmt(br)}" fill="url(#gGoldBoss)"/>
+        <circle cx="${fmt(Number(x) - br * 0.3)}" cy="${fmt(Number(y) - br * 0.34)}" r="${fmt(br * 0.34)}"
+                fill="#fff3cd" opacity="0.55"/>`;
+    }
+    return out;
+  };
+
+  /**
+   * A gilt fillet: a drawn band of gold laid along the case, lit on its top
+   * arris and shadowed under its bottom one. Used wherever two members of
+   * the carcase meet and a real cabinetmaker would have run a bead of metal
+   * into the joint to catch the light.
+   */
+  const goldFillet = (x, y, w, h, r = 1.2) => `
+    <rect x="${fmt(x)}" y="${fmt(y)}" width="${fmt(w)}" height="${fmt(h)}" rx="${fmt(r)}"
+          fill="url(#gGoldV)"/>
+    <rect x="${fmt(x)}" y="${fmt(y)}" width="${fmt(w)}" height="${fmt(h)}" rx="${fmt(r)}"
+          fill="url(#gGiltForm)" opacity="0.5"/>
+    <path d="M ${fmt(x + 0.6)} ${fmt(y + 0.5)} L ${fmt(x + w - 0.6)} ${fmt(y + 0.5)}"
+          stroke="#fff3cd" stroke-width="${fmt(Math.min(0.7, h * 0.22))}" opacity="0.62"/>
+    <path d="M ${fmt(x + 0.6)} ${fmt(y + h - 0.4)} L ${fmt(x + w - 0.6)} ${fmt(y + h - 0.4)}"
+          stroke="#241601" stroke-width="${fmt(Math.min(0.8, h * 0.26))}" opacity="0.5"/>`;
+
+  /** A cast gilt rosette, the paterae dropped into a panel corner. */
+  const goldRosette = (cx, cy, r, petals = 8) => {
+    let p = '';
+    for (let i = 0; i < petals; i += 1) {
+      const a = (i / petals) * 360;
+      const [x1, y1] = polar(cx, cy, r * 0.42, a);
+      p += `<ellipse cx="${x1}" cy="${y1}" rx="${fmt(r * 0.46)}" ry="${fmt(r * 0.3)}"
+             transform="rotate(${fmt(a)} ${x1} ${y1})" fill="url(#gGoldBoss)"
+             stroke="#3a2605" stroke-width="0.3"/>`;
+    }
+    return `<g>
+      <circle cx="${cx}" cy="${cy}" r="${fmt(r * 1.02)}" fill="#241601" opacity="0.35"
+              transform="translate(0.8 1)"/>
+      ${p}
+      <circle cx="${cx}" cy="${cy}" r="${fmt(r * 0.34)}" fill="url(#gGoldBoss)"
+              stroke="#3a2605" stroke-width="0.35"/>
+      <circle cx="${fmt(cx - r * 0.12)}" cy="${fmt(cy - r * 0.14)}" r="${fmt(r * 0.12)}"
+              fill="#fff3cd" opacity="0.6"/>
+    </g>`;
+  };
+
+  /**
+   * Stringing: the hairline of gold let into the surface of the wood. Two
+   * passes, the cut and then the metal sitting a fraction proud of it, which
+   * is the only way an inlay ever reads as inlaid rather than drawn on.
+   */
+  const goldString = (d, w = 0.9, o = 0.9) => `
+    <path d="${d}" fill="none" stroke="#20120500" stroke-width="${fmt(w + 1)}"/>
+    <path d="${d}" fill="none" stroke="#160b02" stroke-width="${fmt(w + 0.7)}" opacity="0.5"
+          transform="translate(0.5 0.6)"/>
+    <path d="${d}" fill="none" stroke="url(#gGoldH)" stroke-width="${fmt(w)}" opacity="${o}"/>
+    <path d="${d}" fill="none" stroke="#fff3cd" stroke-width="${fmt(w * 0.34)}" opacity="0.45"
+          transform="translate(-0.3 -0.35)"/>`;
+
   // The blocked out crest wing: the silhouette the carver saws before any
   // feather is cut into it. Shared by both wings, which then differ only in
   // how they are hung and how heavily they are worked.
@@ -77,32 +174,32 @@
   const defs = `
   <defs>
     <linearGradient id="gWoodV" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#6b4826"/>
-      <stop offset="0.45" stop-color="#503218"/>
-      <stop offset="1" stop-color="#33200f"/>
+      <stop offset="0" stop-color="#84502a"/>
+      <stop offset="0.45" stop-color="#5c2f16"/>
+      <stop offset="1" stop-color="#2e150a"/>
     </linearGradient>
     <linearGradient id="gWoodPost" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="#8a6238"/>
-      <stop offset="0.35" stop-color="#5d3e22"/>
-      <stop offset="1" stop-color="#33200f"/>
+      <stop offset="0" stop-color="#a56c3c"/>
+      <stop offset="0.35" stop-color="#6b3a1e"/>
+      <stop offset="1" stop-color="#2c1409"/>
     </linearGradient>
     <linearGradient id="gWoodPostR" x1="1" y1="0" x2="0" y2="0">
-      <stop offset="0" stop-color="#8a6238"/>
-      <stop offset="0.35" stop-color="#5d3e22"/>
-      <stop offset="1" stop-color="#33200f"/>
+      <stop offset="0" stop-color="#a56c3c"/>
+      <stop offset="0.35" stop-color="#6b3a1e"/>
+      <stop offset="1" stop-color="#2c1409"/>
     </linearGradient>
     <linearGradient id="gRoof" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#54371c"/>
-      <stop offset="1" stop-color="#2c1a0c"/>
+      <stop offset="0" stop-color="#6b3d1e"/>
+      <stop offset="1" stop-color="#27110a"/>
     </linearGradient>
     <linearGradient id="gBarge" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#7d5831"/>
-      <stop offset="1" stop-color="#402712"/>
+      <stop offset="0" stop-color="#9a6236"/>
+      <stop offset="1" stop-color="#3c1c0d"/>
     </linearGradient>
     <radialGradient id="gRing" cx="0.38" cy="0.32" r="0.95">
-      <stop offset="0" stop-color="#8a6238"/>
-      <stop offset="0.6" stop-color="#5d3e22"/>
-      <stop offset="1" stop-color="#38220f"/>
+      <stop offset="0" stop-color="#a06b3c"/>
+      <stop offset="0.6" stop-color="#68371c"/>
+      <stop offset="1" stop-color="#31160b"/>
     </radialGradient>
     <radialGradient id="gFace" cx="0.46" cy="0.4" r="0.75">
       <stop offset="0" stop-color="#ecdcae"/>
@@ -122,6 +219,50 @@
       <stop offset="0.5" stop-color="#c49b47"/>
       <stop offset="1" stop-color="#6e4e1e"/>
     </linearGradient>
+
+    <!-- Fire gilt, which is not brass with the saturation turned up. Brass
+         is one broad sheen; gilding over a burnished ground is a narrow hot
+         specular with deep burnt shadow either side of it, and that gap
+         between the two is the whole difference between a workshop clock
+         and a commissioned one. Diagonal, so the band crosses every gilt
+         edge at the same angle the light comes in at. -->
+    <linearGradient id="gGold" x1="0.05" y1="0" x2="0.95" y2="1">
+      <stop offset="0" stop-color="#4a3208"/>
+      <stop offset="0.17" stop-color="#946d1d"/>
+      <stop offset="0.34" stop-color="#dfbb5c"/>
+      <stop offset="0.46" stop-color="#fff2c2"/>
+      <stop offset="0.56" stop-color="#f4d478"/>
+      <stop offset="0.74" stop-color="#a97d27"/>
+      <stop offset="1" stop-color="#54390b"/>
+    </linearGradient>
+    <linearGradient id="gGoldV" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffeeb6"/>
+      <stop offset="0.24" stop-color="#eccb72"/>
+      <stop offset="0.62" stop-color="#b28a30"/>
+      <stop offset="1" stop-color="#4e3509"/>
+    </linearGradient>
+    <linearGradient id="gGoldH" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#5e420e"/>
+      <stop offset="0.3" stop-color="#d8b358"/>
+      <stop offset="0.44" stop-color="#fff0bb"/>
+      <stop offset="0.62" stop-color="#c69c3c"/>
+      <stop offset="1" stop-color="#503608"/>
+    </linearGradient>
+    <radialGradient id="gGoldBoss" cx="0.34" cy="0.26" r="0.92">
+      <stop offset="0" stop-color="#fff3c8"/>
+      <stop offset="0.34" stop-color="#e8c66c"/>
+      <stop offset="0.72" stop-color="#a87d27"/>
+      <stop offset="1" stop-color="#4a3208"/>
+    </radialGradient>
+    <!-- Laid over a gilt surface once it is drawn: gold does not shade to
+         black, it shades to burnt amber, and the highlight is warmer than
+         anything else on the case. -->
+    <linearGradient id="gGiltForm" x1="0.08" y1="0" x2="0.92" y2="1">
+      <stop offset="0" stop-color="#fff6d8" stop-opacity="0.4"/>
+      <stop offset="0.32" stop-color="#fff6d8" stop-opacity="0"/>
+      <stop offset="0.6" stop-color="#2c1a03" stop-opacity="0.16"/>
+      <stop offset="1" stop-color="#2c1a03" stop-opacity="0.55"/>
+    </linearGradient>
     <radialGradient id="gCone" cx="0.4" cy="0.28" r="0.95">
       <stop offset="0" stop-color="#7d5024"/>
       <stop offset="0.55" stop-color="#5a3716"/>
@@ -134,43 +275,72 @@
          away from it round the far side of the cone. -->
     <linearGradient id="gScaleLit" x1="0" y1="0" x2="0.18" y2="1">
       <stop offset="0" stop-color="#402511"/>
-      <stop offset="0.3" stop-color="#b07c45"/>
-      <stop offset="0.62" stop-color="#8e5c2b"/>
+      <stop offset="0.28" stop-color="#d9a761"/>
+      <stop offset="0.62" stop-color="#a06a30"/>
       <stop offset="1" stop-color="#341d0a"/>
     </linearGradient>
     <linearGradient id="gScaleMid" x1="0" y1="0" x2="0.18" y2="1">
       <stop offset="0" stop-color="#331d0c"/>
-      <stop offset="0.3" stop-color="#8d5c2c"/>
-      <stop offset="0.62" stop-color="#6d4620"/>
+      <stop offset="0.3" stop-color="#a97442"/>
+      <stop offset="0.62" stop-color="#7c5326"/>
       <stop offset="1" stop-color="#281506"/>
     </linearGradient>
     <linearGradient id="gScaleDark" x1="0" y1="0" x2="0.18" y2="1">
       <stop offset="0" stop-color="#26150708"/>
-      <stop offset="0.3" stop-color="#65401d"/>
-      <stop offset="0.62" stop-color="#4b2f14"/>
+      <stop offset="0.3" stop-color="#7a5026"/>
+      <stop offset="0.62" stop-color="#573719"/>
       <stop offset="1" stop-color="#1d0f04"/>
     </linearGradient>
     <!-- Form shading laid over the finished cone, so the whole thing reads
          as one round body rather than a flat field of scales. -->
     <linearGradient id="gConeForm" x1="0" y1="0" x2="1" y2="0.25">
-      <stop offset="0" stop-color="#ffd9a0" stop-opacity="0.26"/>
+      <stop offset="0" stop-color="#ffe6b8" stop-opacity="0.32"/>
       <stop offset="0.34" stop-color="#ffd9a0" stop-opacity="0"/>
       <stop offset="0.66" stop-color="#000000" stop-opacity="0.12"/>
       <stop offset="1" stop-color="#000000" stop-opacity="0.5"/>
     </linearGradient>
     <radialGradient id="gBob" cx="0.38" cy="0.28" r="0.95">
-      <stop offset="0" stop-color="#b08249"/>
-      <stop offset="0.55" stop-color="#6f4a24"/>
-      <stop offset="1" stop-color="#3f2710"/>
+      <stop offset="0" stop-color="#ffeeb6"/>
+      <stop offset="0.3" stop-color="#dcb75c"/>
+      <stop offset="0.68" stop-color="#a17924"/>
+      <stop offset="1" stop-color="#4a3208"/>
     </radialGradient>
     <linearGradient id="gRod" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="#6e4e1e"/>
-      <stop offset="0.45" stop-color="#e8c877"/>
-      <stop offset="1" stop-color="#7c5a24"/>
+      <stop offset="0" stop-color="#4e3509"/>
+      <stop offset="0.4" stop-color="#f4dc96"/>
+      <stop offset="0.52" stop-color="#fff3cd"/>
+      <stop offset="1" stop-color="#6b4a12"/>
     </linearGradient>
-    <linearGradient id="gBird" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#8a5427"/>
-      <stop offset="1" stop-color="#4a2a10"/>
+    <!-- Form washes for the bird. Each one is laid over a part after its own
+         colour and its own carving, so the middle of the mass turns away
+         from the light the way a turned or whittled surface does. They carry
+         no colour of their own, only a warm highlight and a cool shadow, so
+         all six species reuse the same four. -->
+    <linearGradient id="gFormBody" x1="0.06" y1="0" x2="0.92" y2="1">
+      <stop offset="0" stop-color="#ffe8c4" stop-opacity="0.3"/>
+      <stop offset="0.34" stop-color="#ffe8c4" stop-opacity="0"/>
+      <stop offset="0.6" stop-color="#1a0e05" stop-opacity="0.12"/>
+      <stop offset="1" stop-color="#1a0e05" stop-opacity="0.42"/>
+    </linearGradient>
+    <radialGradient id="gFormOrb" cx="0.31" cy="0.22" r="0.88">
+      <stop offset="0" stop-color="#fff1d6" stop-opacity="0.34"/>
+      <stop offset="0.4" stop-color="#fff1d6" stop-opacity="0"/>
+      <stop offset="0.72" stop-color="#1a0e05" stop-opacity="0.14"/>
+      <stop offset="1" stop-color="#1a0e05" stop-opacity="0.44"/>
+    </radialGradient>
+    <!-- The near wing takes the light square on; the far one has already
+         turned out of it and keeps only a thin edge. -->
+    <linearGradient id="gFormWingN" x1="0.08" y1="0.05" x2="0.95" y2="0.95">
+      <stop offset="0" stop-color="#ffeccd" stop-opacity="0.36"/>
+      <stop offset="0.3" stop-color="#ffeccd" stop-opacity="0"/>
+      <stop offset="0.58" stop-color="#1a0e05" stop-opacity="0.14"/>
+      <stop offset="1" stop-color="#1a0e05" stop-opacity="0.42"/>
+    </linearGradient>
+    <linearGradient id="gFormWingF" x1="0.05" y1="0.08" x2="0.98" y2="0.92">
+      <stop offset="0" stop-color="#ffeccd" stop-opacity="0.16"/>
+      <stop offset="0.22" stop-color="#ffeccd" stop-opacity="0"/>
+      <stop offset="0.46" stop-color="#1a0e05" stop-opacity="0.2"/>
+      <stop offset="1" stop-color="#1a0e05" stop-opacity="0.52"/>
     </linearGradient>
     <radialGradient id="gInterior" cx="0.5" cy="0.35" r="0.9">
       <stop offset="0" stop-color="#241608"/>
@@ -211,15 +381,15 @@
     <!-- Grain that follows the plank direction: turbulence stretched along
          one axis, clipped to whatever shape carries the filter. -->
     <filter id="fGrainV" x="-2%" y="-2%" width="104%" height="104%">
-      <feTurbulence type="fractalNoise" baseFrequency="0.31 0.013" numOctaves="4" seed="11" result="n"/>
+      <feTurbulence type="fractalNoise" baseFrequency="0.62 0.03" numOctaves="5" seed="11" result="n"/>
       <feColorMatrix in="n" type="matrix"
-        values="0 0 0 0 0.10  0 0 0 0 0.06  0 0 0 0 0.02  1.6 1.6 1.6 0 -2.2" result="s"/>
+        values="0 0 0 0 0.10  0 0 0 0 0.06  0 0 0 0 0.02  2.3 2.3 2.3 0 -3.1" result="s"/>
       <feComposite in="s" in2="SourceGraphic" operator="in"/>
     </filter>
     <filter id="fGrainH" x="-2%" y="-2%" width="104%" height="104%">
-      <feTurbulence type="fractalNoise" baseFrequency="0.013 0.29" numOctaves="4" seed="23" result="n"/>
+      <feTurbulence type="fractalNoise" baseFrequency="0.03 0.58" numOctaves="5" seed="23" result="n"/>
       <feColorMatrix in="n" type="matrix"
-        values="0 0 0 0 0.10  0 0 0 0 0.06  0 0 0 0 0.02  1.6 1.6 1.6 0 -2.2" result="s"/>
+        values="0 0 0 0 0.10  0 0 0 0 0.06  0 0 0 0 0.02  2.3 2.3 2.3 0 -3.1" result="s"/>
       <feComposite in="s" in2="SourceGraphic" operator="in"/>
     </filter>
 
@@ -227,7 +397,7 @@
          multiplied over the source, so raised edges catch a warm highlight
          and the chisel cuts fall into shadow. -->
     <filter id="fCarved" x="-6%" y="-6%" width="112%" height="112%">
-      <feTurbulence type="fractalNoise" baseFrequency="0.055" numOctaves="3" seed="4" result="bump"/>
+      <feTurbulence type="fractalNoise" baseFrequency="0.09" numOctaves="4" seed="4" result="bump"/>
       <feDiffuseLighting in="bump" surfaceScale="1.7" diffuseConstant="1.08"
                          lighting-color="#ffdfae" result="lit">
         <feDistantLight azimuth="235" elevation="52"/>
@@ -237,7 +407,7 @@
       <feComposite in="shaded" in2="SourceGraphic" operator="in"/>
     </filter>
     <filter id="fCarvedDeep" x="-10%" y="-10%" width="120%" height="120%">
-      <feTurbulence type="fractalNoise" baseFrequency="0.075" numOctaves="4" seed="9" result="bump"/>
+      <feTurbulence type="fractalNoise" baseFrequency="0.12" numOctaves="5" seed="9" result="bump"/>
       <feDiffuseLighting in="bump" surfaceScale="2.6" diffuseConstant="1.1"
                          lighting-color="#ffe3b4" result="lit">
         <feDistantLight azimuth="235" elevation="48"/>
@@ -249,7 +419,7 @@
 
     <!-- Uneven age on the dial face: very low frequency blotching. -->
     <filter id="fAged" x="-2%" y="-2%" width="104%" height="104%">
-      <feTurbulence type="fractalNoise" baseFrequency="0.028" numOctaves="3" seed="31" result="n"/>
+      <feTurbulence type="fractalNoise" baseFrequency="0.045" numOctaves="4" seed="31" result="n"/>
       <feColorMatrix in="n" type="matrix"
         values="0 0 0 0 0.42  0 0 0 0 0.33  0 0 0 0 0.18  0.7 0.7 0.7 0 -1.15" result="s"/>
       <feComposite in="s" in2="SourceGraphic" operator="in"/>
@@ -271,30 +441,62 @@
 
     <!-- Two oak leaf variants and an acorn, instanced with varied transforms
          so the garland never reads as a mirrored copy. -->
+    <!-- The garland leaves are carved in the round and then parcel gilt: the
+         blade is wood, the ribs are gold let into it. Each one gets the
+         treatment every carved mass on this case gets, the silhouette
+         restated inside itself lit above and shadowed below, and a form
+         wash last so a leaf turns away from the light instead of lying flat
+         against the case. -->
     <g id="leafA">
-      <path d="M 0 -21 C 3 -19 4 -16 3 -13 C 8 -15 12 -13 11 -8 C 16 -10 19 -6 16 -1
+      <path id="leafAd" d="M 0 -21 C 3 -19 4 -16 3 -13 C 8 -15 12 -13 11 -8 C 16 -10 19 -6 16 -1
                C 21 0 22 6 17 8 C 20 13 16 17 11 15 C 12 21 6 23 3 19 C 1 24 -3 24 -5 19
                C -8 23 -14 21 -13 15 C -18 17 -22 13 -19 8 C -24 6 -23 0 -18 -1
                C -21 -6 -18 -10 -13 -8 C -14 -13 -10 -15 -5 -13 C -6 -16 -3 -19 0 -21 Z"
             fill="currentColor"/>
+      <use href="#leafAd" transform="translate(-0.7 -1.1) scale(0.9)" fill="none"
+           stroke="#d8a463" stroke-width="1" opacity="0.5"/>
+      <use href="#leafAd" transform="translate(0.7 1.1) scale(0.9)" fill="none"
+           stroke="#1a0c04" stroke-width="1.1" opacity="0.45"/>
       <path d="M 0 -21 L 0 20 M 0 -8 L 8 -12 M 0 -8 L -8 -12 M 0 2 L 10 -2 M 0 2 L -10 -2
                M 0 11 L 7 8 M 0 11 L -7 8"
-            stroke="#2e1c0e" stroke-width="0.9" fill="none" opacity="0.55"/>
+            stroke="#2a1409" stroke-width="1.5" fill="none" opacity="0.6"/>
+      <path d="M 0 -21 L 0 20 M 0 -8 L 8 -12 M 0 -8 L -8 -12 M 0 2 L 10 -2 M 0 2 L -10 -2
+               M 0 11 L 7 8 M 0 11 L -7 8"
+            stroke="url(#gGoldV)" stroke-width="0.8" fill="none" opacity="0.85"/>
+      <path d="M 0 -21 L 0 20 M 0 -8 L 8 -12 M 0 2 L 10 -2"
+            stroke="#fff3cd" stroke-width="0.3" fill="none" opacity="0.4"
+            transform="translate(-0.35 -0.4)"/>
+      <use href="#leafAd" fill="url(#gFormBody)" opacity="0.5"/>
       <path d="M 0 19 C 1 24 1 27 0 30" stroke="currentColor" stroke-width="2.4" fill="none"/>
     </g>
     <g id="leafB">
-      <path d="M 0 -19 C 4 -17 3 -13 2 -11 C 7 -13 11 -10 9 -5 C 15 -6 17 -1 13 3
+      <path id="leafBd" d="M 0 -19 C 4 -17 3 -13 2 -11 C 7 -13 11 -10 9 -5 C 15 -6 17 -1 13 3
                C 18 5 17 11 12 11 C 14 17 8 19 4 15 C 3 21 -3 21 -4 15 C -8 19 -14 17 -12 11
                C -17 11 -18 5 -13 3 C -17 -1 -15 -6 -9 -5 C -11 -10 -7 -13 -2 -11
                C -3 -13 -4 -17 0 -19 Z"
             fill="currentColor"/>
+      <use href="#leafBd" transform="translate(-0.7 -1) scale(0.9)" fill="none"
+           stroke="#d8a463" stroke-width="0.95" opacity="0.5"/>
+      <use href="#leafBd" transform="translate(0.7 1) scale(0.9)" fill="none"
+           stroke="#1a0c04" stroke-width="1" opacity="0.45"/>
       <path d="M 0 -19 L 0 17 M 0 -6 L 7 -9 M 0 -6 L -7 -9 M 0 4 L 8 1 M 0 4 L -8 1"
-            stroke="#2e1c0e" stroke-width="0.9" fill="none" opacity="0.5"/>
+            stroke="#2a1409" stroke-width="1.4" fill="none" opacity="0.55"/>
+      <path d="M 0 -19 L 0 17 M 0 -6 L 7 -9 M 0 -6 L -7 -9 M 0 4 L 8 1 M 0 4 L -8 1"
+            stroke="url(#gGoldV)" stroke-width="0.75" fill="none" opacity="0.85"/>
+      <use href="#leafBd" fill="url(#gFormBody)" opacity="0.5"/>
       <path d="M 0 16 C 1 21 0 24 -1 27" stroke="currentColor" stroke-width="2.2" fill="none"/>
     </g>
+    <!-- The acorns are turned solid and gilded whole: a small hard glint in
+         among the foliage, which is what stops a garland reading as a mat. -->
     <g id="acorn">
-      <path d="M -5 0 C -6 7 -3 12 0 13 C 3 12 6 7 5 0 Z" fill="currentColor"/>
+      <path d="M -5 0 C -6 7 -3 12 0 13 C 3 12 6 7 5 0 Z" fill="url(#gGoldBoss)"
+            stroke="#3a2605" stroke-width="0.4"/>
+      <path d="M -5 0 C -6 7 -3 12 0 13 C 3 12 6 7 5 0 Z" fill="url(#gGiltForm)" opacity="0.75"/>
+      <path d="M -3.6 1.4 C -4.2 6 -2.4 9.6 -0.4 10.8" fill="none" stroke="#fff3cd"
+            stroke-width="0.6" opacity="0.55"/>
       <path d="M -6.5 0 C -6 -4.5 6 -4.5 6.5 0 C 4 2.6 -4 2.6 -6.5 0 Z" fill="#3d250e"/>
+      <path d="M -5.6 -1.4 C -4.4 -3.4 4.4 -3.4 5.6 -1.4" fill="none" stroke="#8a5a2c"
+            stroke-width="0.6" opacity="0.6"/>
       <path d="M 0 -3.6 C 0.6 -6 2 -7.4 3.4 -7.8" stroke="#3d250e" stroke-width="1.6" fill="none"/>
     </g>
   </defs>`;
@@ -308,7 +510,7 @@
   // Each carries its own grain streaks and a worn lower edge that catches
   // the light where weather and hands have polished it.
   function buildShingles() {
-    const tones = ['#573a23', '#4d3219', '#5e3f26', '#482f1b', '#523420'];
+    const tones = ['#6e4225', '#5a3319', '#7a4a2a', '#4e2b14', '#65391e'];
     const strokes = '#2a180b';
     let out = '';
     const rowH = 17;
@@ -377,19 +579,25 @@
       for (let i = 1; i < n; i += 1) {
         const bx = i * 14;
         if (i % 2 === 1) {
-          beads += `<circle cx="${bx}" cy="0" r="3.1" fill="#8a6238"/>
-                    <circle cx="${bx}" cy="0" r="1.3" fill="#33200f"/>`;
+          beads += `<circle cx="${bx}" cy="0.7" r="3.1" fill="#1c0d05" opacity="0.4"/>
+                    <circle cx="${bx}" cy="0" r="3.1" fill="url(#gGoldBoss)" stroke="#3a2605" stroke-width="0.4"/>
+                    <circle cx="${bx - 1}" cy="-1" r="0.95" fill="#fff3cd" opacity="0.6"/>
+                    <circle cx="${bx}" cy="0" r="1.2" fill="#2e1c03" opacity="0.6"/>`;
         } else {
           // the reel between the beads, an elongated lozenge with a lit arris
-          beads += `<ellipse cx="${bx}" cy="0" rx="4.7" ry="2.3" fill="#6f4c2b"
-                     stroke="#33200f" stroke-width="0.7"/>
+          beads += `<ellipse cx="${bx}" cy="0" rx="4.7" ry="2.3" fill="#7d4926"
+                     stroke="#2a1409" stroke-width="0.7"/>
                     <path d="M ${bx - 2.7} -0.9 L ${bx + 2.7} -0.9"
-                     stroke="#a97f4e" stroke-width="0.7" fill="none" opacity="0.7"/>`;
+                     stroke="#c08a4d" stroke-width="0.7" fill="none" opacity="0.7"/>`;
         }
       }
       return `<g transform="translate(${x0} ${y0}) rotate(${fmt(ang)})">
         <rect x="0" y="-7.5" width="${fmt(len)}" height="15" rx="4" fill="url(#gBarge)"
               stroke="#241608" stroke-width="1"/>
+        <rect x="0" y="-7.5" width="${fmt(len)}" height="15" rx="4" fill="url(#gFormBody)"
+              opacity="0.4"/>
+        ${goldFillet(2, -7.1, len - 4, 1.8, 0.8)}
+        ${goldFillet(2, 5.4, len - 4, 1.6, 0.8)}
         ${beads}
       </g>`;
     };
@@ -403,7 +611,8 @@
               fill="none" stroke="#33200f" stroke-width="1.2"/>
         <path d="M 0 -8.2 A 8.2 8.2 0 0 1 8.2 0" transform="translate(-0.8 -0.8)"
               fill="none" stroke="#a97f4e" stroke-width="0.7" opacity="0.6"/>
-        <circle cx="1.4" cy="0.6" r="1.1" fill="#33200f"/>
+        <circle cx="1.4" cy="0.6" r="2.4" fill="url(#gGoldBoss)" stroke="#3a2605" stroke-width="0.4"/>
+        <circle cx="0.7" cy="-0.1" r="0.8" fill="#fff3cd" opacity="0.6"/>
       </g>`;
     // Slightly proud of the shingle field, with the curls at both ends.
     return `<g filter="url(#fCarved)">
@@ -424,14 +633,15 @@
     // and a stamping.
     const wing = (dir, v) => `
       <g transform="scale(${dir} 1) rotate(${fmt(v.rot)} 10 -18) translate(0 ${fmt(v.lift)})">
-        <path d="${WING_MASS}" fill="${v.tone}" stroke="#2e1c0e" stroke-width="1.1"/>
+        <path d="${WING_MASS}" fill="${v.tone}" stroke="#3a2605" stroke-width="1.1"/>
+        <path d="${WING_MASS}" fill="url(#gGiltForm)" opacity="0.62"/>
         <path d="M 14 -28 C 30 -36 48 -40 62 -37 M 18 -16 C 36 -22 52 -22 64 -18
                  M 20 -4 C 34 -6 48 -4 58 1"
-              stroke="#2e1c0e" stroke-width="${fmt(v.cut)}" fill="none" opacity="0.7"/>
+              stroke="#3a2605" stroke-width="${fmt(v.cut)}" fill="none" opacity="0.7"/>
         <!-- lit edges on the feather rows, the cut catching the sky -->
         <path d="M 14 -28 C 30 -36 48 -40 62 -37 M 18 -16 C 36 -22 52 -22 64 -18
                  M 20 -4 C 34 -6 48 -4 58 1"
-              stroke="#a97f4e" stroke-width="0.55" fill="none" opacity="${fmt(v.lit)}"
+              stroke="#fff3cd" stroke-width="0.55" fill="none" opacity="${fmt(v.lit)}"
               transform="translate(-0.8 -0.9)"/>
         <!-- individual flight feather separations along the trailing edge -->
         <path d="M 74 -44 C 70 -40 66 -37 62 -35 M 86 -18 C 81 -16 76 -15 71 -14
@@ -469,40 +679,47 @@
     ].map((p) => `<use href="#${p.leaf}" transform="translate(${p.x} ${p.y}) rotate(${p.r})
                    scale(${fmt(p.s * (rnd() < 0.5 ? -1 : 1))} ${p.s})"/>`).join('');
 
-    return `<g transform="translate(230 64)" filter="url(#fCarvedDeep)">
-      <!-- oak leaves flanking the bird -->
-      <g color="#5d3e22">
+    return `<g transform="translate(230 64)">
+      <!-- oak leaves flanking the bird, carved in the solid -->
+      <g color="#7a4522">
         ${spray}
         <use href="#acorn" transform="translate(-41 34) rotate(-18) scale(1.08)"/>
         <use href="#acorn" transform="translate(-31 40) rotate(-4) scale(0.8)"/>
         <use href="#acorn" transform="translate(43 36) rotate(14) scale(0.94)"/>
       </g>
-      ${wing(-1, { rot: -3.2, lift: -1.1, tone: '#6b4827', cut: 1.35, lit: 0.62 })}
-      ${wing(1, { rot: 1.6, lift: 0.8, tone: '#674528', cut: 1.2, lit: 0.5 })}
+      ${wing(-1, { rot: -3.2, lift: -1.1, tone: 'url(#gGold)', cut: 1.35, lit: 0.62 })}
+      ${wing(1, { rot: 1.6, lift: 0.8, tone: 'url(#gGoldH)', cut: 1.2, lit: 0.5 })}
       <!-- body, head and tail -->
       <path d="M -12 30 C -16 8 -12 -14 0 -20 C 12 -14 16 8 12 30 C 6 36 -6 36 -12 30 Z"
-            fill="#7d5024" stroke="#2e1c0e" stroke-width="1.1"/>
+            fill="url(#gGoldV)" stroke="#3a2605" stroke-width="1.1"/>
+      <path d="M -12 30 C -16 8 -12 -14 0 -20 C 12 -14 16 8 12 30 C 6 36 -6 36 -12 30 Z"
+            fill="url(#gGiltForm)" opacity="0.7"/>
       <!-- scalloped breast plumage, carved rows with lit edges -->
       <path d="M -8 -12 C -4 -10 4 -10 8 -12 M -10 -4 C -5 -2 5 -2 10 -4
                M -11 4 C -5 6 5 6 11 4 M -10 12 C -5 14 5 14 10 12
                M -8 20 C -4 22 4 22 8 20 M -6 27 C -3 29 3 29 6 27"
-            stroke="#33200f" stroke-width="0.9" fill="none" opacity="0.7"/>
+            stroke="#3a2605" stroke-width="0.9" fill="none" opacity="0.65"/>
       <path d="M -8 -12 C -4 -10 4 -10 8 -12 M -10 -4 C -5 -2 5 -2 10 -4
                M -11 4 C -5 6 5 6 11 4 M -10 12 C -5 14 5 14 10 12"
-            stroke="#b08249" stroke-width="0.45" fill="none" opacity="0.55"
+            stroke="#fff3cd" stroke-width="0.45" fill="none" opacity="0.6"
             transform="translate(-0.6 -0.8)"/>
       <path d="M 0 -20 C -7 -26 -8 -36 0 -42 C 8 -36 7 -26 0 -20 Z"
-            fill="#8a5a2c" stroke="#2e1c0e" stroke-width="1"/>
+            fill="url(#gGoldBoss)" stroke="#3a2605" stroke-width="1"/>
+      <path d="M -5.6 -24 C -7.4 -29 -6.8 -35.4 -1.6 -40.2" fill="none"
+            stroke="#fff3cd" stroke-width="0.8" opacity="0.6"/>
       <!-- crown feather lines and a brow ridge over the eye -->
       <path d="M -5 -27 C -2 -25.6 2 -25.6 5 -27 M -6.4 -31.6 C -3 -30.4 3 -30.4 6.4 -31.6"
             stroke="#33200f" stroke-width="0.7" fill="none" opacity="0.7"/>
       <path d="M -5.6 -36.4 C -3.4 -37.6 -0.6 -37.8 1.4 -37"
             stroke="#33200f" stroke-width="0.8" fill="none" opacity="0.8"/>
-      <path d="M 0 -40 L 3.6 -34 L 0 -32 Z" fill="#33200f"/>
+      <path d="M 0 -40 L 4.4 -33.6 L 0 -31.6 Z" fill="url(#gGoldV)" stroke="#3a2605"
+            stroke-width="0.4"/>
       <circle cx="-2.4" cy="-35" r="1.5" fill="#1c0f05"/>
       <circle cx="-2.9" cy="-35.5" r="0.45" fill="#e8d9b4" opacity="0.9"/>
       <path d="M -9 30 L -14 48 L -5 44 L 0 52 L 5 44 L 14 48 L 9 30 Z"
-            fill="#5d3e22" stroke="#2e1c0e" stroke-width="1"/>
+            fill="url(#gGold)" stroke="#3a2605" stroke-width="1"/>
+      <path d="M -9 30 L -14 48 L -5 44 L 0 52 L 5 44 L 14 48 L 9 30 Z"
+            fill="url(#gGiltForm)" opacity="0.6"/>
       <!-- tail feather grooves running into the fan, no two the same depth -->
       <path d="M -8 32 L -11.5 45 M -2.6 33 L -3.4 47 M 2.6 33 L 3.4 47 M 8 32 L 11.5 45"
             stroke="#2e1c0e" stroke-width="0.9" fill="none" opacity="0.75"/>
@@ -548,28 +765,28 @@
     for (const p of spots) {
       const leaf = rnd() < 0.5 ? 'leafA' : 'leafB';
       const flip = rnd() < 0.5 ? -1 : 1;
-      const tone = pick(['#6b4a2a', '#7a542f', '#5f3f22', '#715030']);
+      const tone = pick(['#8a5028', '#9c5c2e', '#7a4522', '#8f5527']);
       out += `<g transform="translate(${fmt(p.x)} ${fmt(p.y)}) rotate(${fmt(p.r)}) scale(${fmt(p.s * flip)} ${fmt(p.s)})"
                color="${tone}"><use href="#${leaf}"/></g>`;
       if (rnd() < 0.4) {
         out += `<g transform="translate(${fmt(p.x + range(-10, 10))} ${fmt(p.y + range(8, 16))}) rotate(${fmt(range(-40, 40))}) scale(${fmt(range(0.8, 1.1))})"
-                 color="#6b4520"><use href="#acorn"/></g>`;
+                 color="#8a5028"><use href="#acorn"/></g>`;
       }
     }
     // Carved stems winding down both posts, tying the leaves into one vine.
     // Dark cut with a worn lit edge, drawn first so the leaves sit on it.
     const stems = `
       <path d="M 91 186 C 84 236 97 282 89 332 C 83 376 95 420 88 472"
-            stroke="#33200f" stroke-width="2.4" fill="none" opacity="0.85"/>
+            stroke="#2a1409" stroke-width="2.4" fill="none" opacity="0.85"/>
       <path d="M 91 186 C 84 236 97 282 89 332 C 83 376 95 420 88 472"
-            stroke="#8a6238" stroke-width="0.9" fill="none" opacity="0.5"
+            stroke="#c08a4d" stroke-width="0.9" fill="none" opacity="0.55"
             transform="translate(-0.9 -0.9)"/>
       <path d="M 369 196 C 376 244 363 288 371 336 C 377 378 365 424 372 472"
-            stroke="#33200f" stroke-width="2.4" fill="none" opacity="0.85"/>
+            stroke="#2a1409" stroke-width="2.4" fill="none" opacity="0.85"/>
       <path d="M 369 196 C 376 244 363 288 371 336 C 377 378 365 424 372 472"
-            stroke="#8a6238" stroke-width="0.9" fill="none" opacity="0.5"
+            stroke="#c08a4d" stroke-width="0.9" fill="none" opacity="0.55"
             transform="translate(-0.9 -0.9)"/>`;
-    return `<g filter="url(#fCarved)">${stems}${out}</g>`;
+    return `<g>${stems}${out}</g>`;
   }
 
   // Bead and reel carving round the dial ring: round beads alternating with
@@ -645,11 +862,19 @@
       // since morning: each sits a hair off true and carries its own weight.
       const tilt = range(-1.8, 1.8);
       const wear = range(0.74, 0.94);
-      out += `<text x="${fmt(x)}" y="${fmt(y)}" text-anchor="middle" dominant-baseline="central"
+      // Applied gilt figures, not painted ones: each is a cut numeral pinned
+      // to the dial, so it throws a shadow of its own onto the bone before
+      // the gold goes down over it.
+      const attrs = `text-anchor="middle" dominant-baseline="central"
+               font-size="${fmt(size * range(0.97, 1.03))}" font-weight="bold"`;
+      out += `<text x="${fmt(x + 0.7)}" y="${fmt(y + 0.9)}" ${attrs}
                transform="rotate(${fmt(tilt)} ${fmt(x)} ${fmt(y)})"
-               font-size="${fmt(size * range(0.97, 1.03))}" fill="#46290f" stroke="#1d0e04"
-               stroke-width="${fmt(range(0.45, 0.7))}" opacity="${fmt(wear)}"
-               paint-order="stroke" font-weight="bold">${label}</text>`;
+               fill="#2a1608" opacity="0.34">${label}</text>
+              <text x="${fmt(x)}" y="${fmt(y)}" ${attrs}
+               transform="rotate(${fmt(tilt)} ${fmt(x)} ${fmt(y)})"
+               fill="url(#gGoldV)" stroke="#3f2b06"
+               stroke-width="${fmt(range(0.4, 0.6))}" opacity="${fmt(wear + 0.06)}"
+               paint-order="stroke">${label}</text>`;
     }
     return out;
   }
@@ -719,21 +944,30 @@
                 fill="url(#${tone})" stroke="#1c0e03" stroke-width="0.62"/>
           <!-- the umbo: the raised boss across the shield, cut in and lit -->
           <path d="${umbo}" stroke="#2a1607" stroke-width="0.62" fill="none" opacity="0.75"/>
-          <path d="${umbo}" stroke="#c99a5c" stroke-width="0.42" fill="none" opacity="0.5"
+          <path d="${umbo}" stroke="#f0c583" stroke-width="0.42" fill="none" opacity="0.55"
                 transform="translate(-0.3 -0.6)"/>
           <path d="M 0 ${fmt(h * 0.36)} L 0 ${fmt(h * 0.9)}" stroke="#20110a"
                 stroke-width="0.55" opacity="0.5"/>
           <!-- the arris the light runs along, upper left as everywhere else -->
           <path d="M ${fmt(-w * 0.9)} ${fmt(-h * 0.3)}
                    C ${fmt(-w * 0.86)} ${fmt(-h * 0.82)} ${fmt(-w * 0.44)} ${fmt(-h * 0.98)} 0 ${fmt(-h * 0.94)}"
-                stroke="#caa066" stroke-width="0.5" fill="none" opacity="0.55"/>
+                stroke="#f0c583" stroke-width="0.5" fill="none" opacity="0.6"/>
         </g>`;
       }
     }
 
     return `<g id="${id}">
-      <path d="M ${cx} -7 L ${cx} 4" stroke="url(#gBrassV)" stroke-width="3"/>
-      <circle cx="${cx}" cy="-8" r="4" fill="none" stroke="url(#gBrass)" stroke-width="2.6"/>
+      <path d="M ${cx} -7 L ${cx} 6" stroke="url(#gGoldV)" stroke-width="3.2"/>
+      <circle cx="${cx}" cy="-8" r="4" fill="none" stroke="url(#gGold)" stroke-width="2.8"/>
+      <!-- the gilt cap the cone is hung from: a turned collar over the stalk
+           with a beaded lip, so the weight reads as a mounted piece rather
+           than a fir cone somebody tied a chain to -->
+      <path d="M ${cx - 7.6} 4 L ${cx + 7.6} 4 L ${cx + 6.2} 12.5 L ${cx - 6.2} 12.5 Z"
+            fill="url(#gGold)" stroke="#3a2605" stroke-width="0.6"/>
+      <path d="M ${cx - 6.6} 5.6 L ${cx + 6.6} 5.6" stroke="#fff3cd" stroke-width="0.8" opacity="0.6"/>
+      <path d="M ${cx - 6.3} 11.2 L ${cx + 6.3} 11.2" stroke="#241601" stroke-width="0.9" opacity="0.5"/>
+      ${[-5, -1.7, 1.7, 5].map((o) => `<circle cx="${fmt(cx + o)}" cy="13.6" r="1.5"
+          fill="url(#gGoldBoss)"/>`).join('')}
       <!-- the hanger ring, which only ever gets touched by pulling on it -->
       <g id="patinaHanger-${train}" opacity="0" pointer-events="none">
         <circle cx="${cx}" cy="-8" r="4" fill="none" stroke="#f6dfa4" stroke-width="1.3"/>
@@ -766,9 +1000,27 @@
     <g class="ck-case">
       <path d="M 230 30 L 14 176 L 446 176 Z" fill="url(#gRoof)"/>
       ${buildShingles()}
+      <!-- The roof is two planes, not one field of tiles. The left slope
+           takes the light square on and the right slope has already turned
+           out of it, so each gets its own wash over the finished shingles,
+           the same way the pine cones are washed over their scales. -->
+      <path d="M 230 30 L 14 176 L 230 176 Z" fill="url(#gFormWingN)" opacity="0.55"
+            pointer-events="none"/>
+      <path d="M 230 30 L 446 176 L 230 176 Z" fill="url(#gFormWingF)" opacity="0.62"
+            pointer-events="none"/>
       <!-- eave boards and the shadow the overhang throws on the case front -->
       <rect x="16" y="168" width="428" height="14" rx="5" fill="url(#gBarge)"
             stroke="#241608" stroke-width="1" filter="url(#fCarved)"/>
+      <!-- a gilt band run the full width of the eave, and a drop of gilt
+           cresting hung off it at every second rafter end -->
+      ${goldFillet(18, 169, 424, 2.4, 1)}
+      ${goldFillet(18, 178.4, 424, 2, 1)}
+      ${[26, 40, 54, 406, 420, 434].map((cx) => `
+        <path d="M ${cx} 181 L ${cx - 3.4} 187 L ${cx} 193.5 L ${cx + 3.4} 187 Z"
+              fill="url(#gGoldV)" stroke="#3a2605" stroke-width="0.35"/>
+        <path d="M ${cx - 1.2} 183.4 L ${cx - 1.2} 190" stroke="#fff3cd"
+              stroke-width="0.45" opacity="0.5"/>
+        <circle cx="${cx}" cy="195.6" r="1.5" fill="url(#gGoldBoss)"/>`).join('')}
       <rect x="52" y="184" width="356" height="22" fill="#000000" opacity="0.42"
             filter="url(#fBlur7)"/>
       ${buildBargeboards()}
@@ -783,10 +1035,15 @@
     const y = 191 + range(-0.4, 0.4);
     const w = range(6.4, 7.5);
     const h = range(6, 7);
+    const gilt = i % 2 === 1;
     return `<rect x="${fmt(x)}" y="${fmt(y)}" width="${fmt(w)}" height="${fmt(h)}"
-             fill="${pick(['#3f2712', '#452c15', '#392310'])}" stroke="#241608" stroke-width="0.6"/>
+             fill="${gilt ? 'url(#gGoldV)' : pick(['#43200f', '#4a2614', '#3c1c0e'])}"
+             stroke="${gilt ? '#3a2605' : '#241608'}" stroke-width="0.6"/>
             <path d="M ${fmt(x + 0.8)} ${fmt(y + 0.9)} L ${fmt(x + w - 0.8)} ${fmt(y + 0.9)}"
-             stroke="#a97f4e" stroke-width="0.6" fill="none" opacity="${fmt(range(0.35, 0.6))}"/>`;
+             stroke="${gilt ? '#fff3cd' : '#c08a4d'}" stroke-width="0.6" fill="none"
+             opacity="${fmt(range(0.35, 0.6) + (gilt ? 0.2 : 0))}"/>
+            ${gilt ? `<rect x="${fmt(x)}" y="${fmt(y)}" width="${fmt(w)}" height="${fmt(h)}"
+             fill="url(#gGiltForm)" opacity="0.45"/>` : ''}`;
   }).join('');
 
   // Bead row running along the base moulding, turned by hand off the same
@@ -795,10 +1052,12 @@
     const x = 84 + i * 13 + range(-0.4, 0.4);
     const y = 465 + range(-0.3, 0.3);
     const r = range(2.3, 2.85);
-    return `<circle cx="${fmt(x)}" cy="${fmt(y)}" r="${fmt(r)}" fill="${pick(['#8a6238', '#805931', '#8f6a3e'])}"/>
-            <circle cx="${fmt(x)}" cy="${fmt(y)}" r="${fmt(r * 0.38)}" fill="#33200f"/>
+    return `<circle cx="${fmt(x + 0.6)}" cy="${fmt(y + 0.8)}" r="${fmt(r)}" fill="#1c0d05" opacity="0.4"/>
+            <circle cx="${fmt(x)}" cy="${fmt(y)}" r="${fmt(r)}" fill="url(#gGoldBoss)"
+             stroke="#3a2605" stroke-width="0.4"/>
+            <circle cx="${fmt(x)}" cy="${fmt(y)}" r="${fmt(r * 0.36)}" fill="#2e1c03" opacity="0.7"/>
             <path d="M ${fmt(x - r * 0.55)} ${fmt(y - r * 0.5)} a ${fmt(r * 0.75)} ${fmt(r * 0.75)} 0 0 1 ${fmt(r * 1.05)} -0.2"
-             stroke="#c39a63" stroke-width="0.45" fill="none" opacity="0.5"/>`;
+             stroke="#fff3cd" stroke-width="0.5" fill="none" opacity="0.62"/>`;
   }).join('');
 
   // Joinery: the oak pegs that actually hold the case together, driven
@@ -908,6 +1167,8 @@
       <rect x="76" y="168" width="28" height="310" rx="6" filter="url(#fGrainV)" opacity="0.8"/>
       <rect x="356" y="168" width="28" height="310" rx="6" fill="url(#gWoodPostR)"/>
       <rect x="356" y="168" width="28" height="310" rx="6" filter="url(#fGrainV)" opacity="0.8"/>
+      ${goldFillet(77.4, 172, 1.8, 302, 0.7)}
+      ${goldFillet(380.8, 172, 1.8, 302, 0.7)}
       <!-- fluting on the posts: vertical grooves, dark cut with a lit edge -->
       <path d="M 84 178 L 84 470 M 90 178 L 90 470 M 96 178 L 96 470"
             stroke="#2e1c0e" stroke-width="1" fill="none" opacity="0.45"/>
@@ -919,7 +1180,25 @@
             stroke="#a97f4e" stroke-width="0.5" fill="none" opacity="0.4"/>
       <!-- front panel, plank grain running vertically -->
       <rect x="100" y="184" width="260" height="274" fill="url(#gWoodV)"/>
-      <rect x="100" y="184" width="260" height="274" filter="url(#fGrainV)" opacity="0.85"/>
+      <rect x="100" y="184" width="260" height="274" filter="url(#fGrainV)" opacity="0.62"/>
+      <!-- The panel is fielded, not flat: the ground is worked back from a
+           raised border, so a bevel runs all the way round it. The two
+           bevels the light reaches are lit, the two facing away from it are
+           in shadow, and that alone gives the front of the case a thickness
+           it never had as a plain board. -->
+      <path d="M 100 184 L 360 184 L 344 200 L 116 200 Z" fill="#c08a4d" opacity="0.3"/>
+      <path d="M 100 184 L 116 200 L 116 442 L 100 458 Z" fill="#c08a4d" opacity="0.22"/>
+      <path d="M 360 184 L 360 458 L 344 442 L 344 200 Z" fill="#1c0d05" opacity="0.42"/>
+      <path d="M 100 458 L 116 442 L 344 442 L 360 458 Z" fill="#1c0d05" opacity="0.5"/>
+      <path d="M 116 200 L 344 200 L 344 442 L 116 442 Z" fill="url(#gWoodV)" opacity="0.5"/>
+      <path d="M 116 200 L 344 200 L 344 442 L 116 442 Z" fill="none" stroke="#1c0d05"
+            stroke-width="0.8" opacity="0.5"/>
+      <!-- gilt stringing let into the field, with a cast rosette dropped
+           into each corner where the two runs meet -->
+      ${goldString('M 126 210 L 334 210 L 334 432 L 126 432 Z', 0.85, 0.85)}
+      ${goldString('M 131 215 L 329 215 L 329 427 L 131 427 Z', 0.45, 0.5)}
+      ${[[126, 210], [334, 210], [126, 432], [334, 432]]
+    .map(([rx, ry]) => goldRosette(rx, ry, 4.6)).join('')}
       <!-- three plank seams, and no plank was ever jointed dead straight:
            each wanders by a fraction of a millimetre down its length and
            carries a lit arris where the two boards do not sit quite flush -->
@@ -935,23 +1214,40 @@
       <!-- cornice under the roof and the base moulding -->
       <rect x="68" y="168" width="324" height="22" rx="7" fill="url(#gWoodV)"
             stroke="#241608" stroke-width="1" filter="url(#fCarved)"/>
+      <!-- A drawn gilt fillet run into the joint at the head and the foot of
+           the carcase. On a real case this is a strip of metal let into the
+           moulding so that the eye is given a hard bright line exactly where
+           two members meet, and it is the single cheapest way to make
+           joinery look expensive. -->
+      ${goldFillet(70, 169.2, 320, 2.6, 1.2)}
+      ${goldFillet(70, 186.4, 320, 2.2, 1)}
       ${dentils}
       <rect x="68" y="452" width="324" height="26" rx="7" fill="url(#gWoodV)"
             stroke="#241608" stroke-width="1" filter="url(#fCarved)"/>
+      ${goldFillet(70, 453.4, 320, 2.6, 1.2)}
+      ${goldFillet(70, 473.6, 320, 2.4, 1)}
       ${baseBeads}
       <rect x="78" y="444" width="304" height="12" rx="5" fill="#33200f"/>
+      ${goldFillet(80, 445.4, 300, 1.8, 0.8)}
       <!-- serpentine apron below the base: a carved valance with scroll
            incisions and a small leaf drop at each dip, the chains and the
            pendulum rod emerging from behind it -->
-      <path d="M 96 476 L 364 476 L 364 486
+      <!-- The valance is narrower than the moulding above it, so the flat
+           top corners are widened out to the moulding's own edges first:
+           otherwise the case has two unpainted notches under its own
+           cornice, the case reads as hollow there instead of solid wood. -->
+      <path d="M 68 474 L 392 474 L 392 484 L 364 484 L 364 486
                C 344 490 332 503 312 499 C 288 494 262 490 230 497
-               C 198 490 172 494 148 499 C 128 503 116 490 96 486 Z"
+               C 198 490 172 494 148 499 C 128 503 116 490 96 486
+               L 96 484 L 68 484 Z"
             fill="url(#gWoodV)" stroke="#241608" stroke-width="1" filter="url(#fCarved)"/>
       <path d="M 128 482 C 158 491 196 485 224 489 M 332 482 C 302 491 264 485 236 489"
             stroke="#2e1c0e" stroke-width="1" fill="none" opacity="0.55"/>
       <path d="M 128 482 C 158 491 196 485 224 489 M 332 482 C 302 491 264 485 236 489"
-            stroke="#a97f4e" stroke-width="0.5" fill="none" opacity="0.45"
+            stroke="#c08a4d" stroke-width="0.5" fill="none" opacity="0.45"
             transform="translate(-0.7 -0.8)"/>
+      ${goldString(`M 96 486.4 C 116 490.4 128 503.4 148 499.4 C 172 494.4 198 490.4 230 497.4
+                    C 262 490.4 288 494.4 312 499.4 C 332 503.4 344 490.4 364 486.4`, 0.9, 0.85)}
       <g transform="translate(150 497) scale(0.45)" color="#54371f"><use href="#leafB"/></g>
       <g transform="translate(310 497) scale(0.45)" color="#54371f"><use href="#leafB"/></g>
       ${toolMarks}
@@ -963,72 +1259,692 @@
     </g>
     ${buildGarland()}`;
 
+  // ------------------------------------------------------------------
   // The bird behind the door: carved and painted, facing forward the way a
   // real cuckoo does, perched on a turned rod at the sill. The lower beak
   // drops on each note of the call.
+  //
+  // One armature carries all six species. The blocking, the perch, the
+  // hinged beak and the motion wiring are shared; the palette, the plumage
+  // detail and a handful of species-only accents are what change.
+  //
+  // The depth is hand built, not filtered. fCarved's turbulence bump map
+  // carves the case beautifully, but it was tuned for slab sized surfaces
+  // like the panels and the moulding, and at the sixty units this bird spans
+  // the same turbulence reads as dirt rather than as form. The bird is also
+  // the only carved thing on the clock that moves, and a filter on it would
+  // be re-run every frame of every strike. So each mass is built the way the
+  // pendulum bob and the pine cones are built instead: the local colour and
+  // its detail first, then the rim restated just inside the silhouette
+  // twice, lifted toward the light and dropped away from it so the edge
+  // reads as a rounded carved lip, then one directional wash over the whole
+  // form. The light is upper left here as it is everywhere else on the case.
+  // ------------------------------------------------------------------
+
+  /**
+   * What every bird shares. A skin below only states where it differs, so
+   * the diff between two species is readable as the difference between two
+   * actual birds rather than as two walls of hex.
+   *
+   * Colour triples run light to dark and are fed to a radial gradient whose
+   * hot spot is pushed up and to the left, which is the single trick that
+   * makes a flat SVG shape read as a lit, rounded mass.
+   */
+  const BIRD_BASE = {
+    cut: '#1d1007',       // the chisel line and the silhouette stroke
+    lit: '#d3a165',       // rim light along the top of every carved edge
+    shade: '#120a03',     // rim shadow along the bottom of it
+    foot: '#6a4e2e',
+    claw: '#241505',
+    eye: { iris: '#140b04', ring: '#2a180a', glint: '#f2e5c4', r: 1.62 },
+    fan: { len: 25, spread: 18, n: 5, w: 3, taper: 0.13 },
+    // The gape line sits at y -9 because the frame loop hinges the mouth
+    // there. Everything else about the beak is the species' own.
+    beak: { w: 3.2, base: -12.1, tip: -5.7, lowW: 2.5, lowTip: -6.1 },
+    build: { bodyW: 1, bodyH: 1, head: 1 },
+    formO: { body: 1, wing: 1, head: 1, breast: 0.85 },
+    plumeO: 0.72,
+  };
+
+  const BIRD_SKINS = {
+    // The house bird, and the only one that is a piece of stained woodwork
+    // first and a species second: warm walnut over a cream barred breast.
+    cuckoo: {
+      body: ['#c2884a', '#8a5426', '#452810'],
+      wing: ['#a96a33', '#6a3f1c', '#33200c'],
+      head: ['#cc9354', '#8f5a2a', '#4a2c12'],
+      breast: ['#f2e2b8', '#d6bf90', '#94794c'],
+      tail: ['#b47a3a', '#633916'],
+      beakU: ['#efc463', '#b8862e'],
+      beakL: ['#d8ab48', '#8f6a22'],
+      plume: '#a5854e',
+      quill: '#8a6134',
+      throat: { c: '#b06a3a', o: 0.5 },
+    },
+    // Red right through, with the pointed crest doing most of the work: it
+    // is the one thing that says cardinal from across a room.
+    cardinal: {
+      body: ['#ee5c39', '#c62a15', '#66110a'],
+      wing: ['#cf3a1f', '#8e1a0d', '#440906'],
+      head: ['#ff7452', '#d63018', '#701208'],
+      breast: ['#ff8a66', '#e03a24', '#8a1a0d'],
+      tail: ['#a02010', '#460a04'],
+      beakU: ['#ff8c3a', '#bf4914'],
+      beakL: ['#f07c2e', '#a83e10'],
+      cut: '#2c0703',
+      lit: '#ff9d78',
+      shade: '#340602',
+      foot: '#8a6a52',
+      eye: { iris: '#180705', ring: '#340a04', glint: '#ffd9c4' },
+      plume: '#96200f',
+      quill: '#7a150a',
+      crest: true,
+      mask: '#150c0a',
+      beak: { w: 3.7, base: -12.3, tip: -5.1, lowW: 3, lowTip: -5.5 },
+      fan: { len: 27, spread: 15, n: 5, w: 3.1, taper: 0.1 },
+    },
+    // Glossy black is a trap: paint it flat and it is a hole in the door.
+    // The sheen highlights are cool and blue, which is what actually reads
+    // as gloss, and the epaulette is the only warm thing on the bird.
+    redwing: {
+      body: ['#585966', '#1b1c21', '#07070a'],
+      wing: ['#494a55', '#141519', '#050507'],
+      head: ['#60616e', '#1e1f25', '#08080b'],
+      breast: ['#4d4e59', '#17181c', '#060608'],
+      tail: ['#26272c', '#08080a'],
+      beakU: ['#575862', '#151519'],
+      beakL: ['#4a4b55', '#0f0f12'],
+      cut: '#050506',
+      lit: '#9aa4ba',
+      shade: '#000000',
+      foot: '#2a2b30',
+      eye: { iris: '#0b0b0d', ring: '#26272c', glint: '#d4dbea' },
+      plume: '#3d3e48',
+      quill: '#41424d',
+      fan: { len: 24, spread: 18, n: 5, w: 3, taper: 0.14 },
+      epaulette: { red: '#cf2418', redHi: '#f2543c', buff: '#e8bf52', buffHi: '#f7dd92' },
+      formO: { body: 1, wing: 1, head: 1, breast: 0.7 },
+    },
+    // The breast is the whole bird. Keep it brick and warm, never tan, and
+    // let the head go properly dark so the orange has something to sit on.
+    robin: {
+      body: ['#ab9c87', '#776b5c', '#453e35'],
+      wing: ['#9c8e77', '#685d50', '#3c362e'],
+      head: ['#867b6d', '#4f473e', '#2a2621'],
+      breast: ['#ffa451', '#d8632a', '#8a3411'],
+      tail: ['#3f3a33', '#1a1815'],
+      beakU: ['#f0cb5e', '#bf9329'],
+      beakL: ['#dcb54a', '#9e7720'],
+      cut: '#191612',
+      lit: '#dcc7a4',
+      shade: '#0d0b09',
+      foot: '#5e5145',
+      eye: { iris: '#0f0c0a', ring: '#241f1a', glint: '#f0e8d6' },
+      plume: '#8a3612',
+      quill: '#8f8474',
+      eyeRing: '#ddd2bb',
+      throatStreaks: '#f2ebdd',
+      formO: { body: 0.85, wing: 0.9, head: 0.85, breast: 0.62 },
+      fan: { len: 24, spread: 17, n: 5, w: 3, taper: 0.14 },
+      build: { bodyW: 1.04, bodyH: 1.02, head: 1.01 },
+    },
+    // Small and dainty on purpose: the body comes in, the head stays big,
+    // and the cap, bib and white cheek do the identifying.
+    chickadee: {
+      body: ['#b4aa99', '#79746a', '#3e3b36'],
+      wing: ['#a89e8e', '#6c6860', '#37342e'],
+      head: ['#b8ae9d', '#7d786d', '#413e38'],
+      breast: ['#f8f2e4', '#e0d8c6', '#a09781'],
+      tail: ['#6e6a62', '#312f2b'],
+      beakU: ['#6e665a', '#232019'],
+      beakL: ['#5e574d', '#191612'],
+      cut: '#2a2723',
+      lit: '#efe6d2',
+      shade: '#141210',
+      foot: '#4a453e',
+      eye: { iris: '#0c0b0a', ring: '#1e1c19', glint: '#ffffff', r: 1.52 },
+      plume: '#b9b0a0',
+      quill: '#8d887e',
+      cap: '#181715',
+      bib: '#181715',
+      flank: '#cfa878',
+      formO: { body: 0.9, wing: 0.95, head: 0.5, breast: 0.6 },
+      beak: { w: 2.6, base: -11.7, tip: -6.4, lowW: 2.1, lowTip: -6.7 },
+      fan: { len: 22, spread: 19, n: 5, w: 2.7, taper: 0.15 },
+      build: { bodyW: 0.9, bodyH: 0.94, head: 1.06 },
+    },
+    // Quiet next to the rest, and it has to stay quiet: the moment the fawn
+    // goes saturated it stops being a dove. Long pointed tail, small head.
+    dove: {
+      body: ['#e3c9a7', '#a68d6e', '#5d4c38'],
+      wing: ['#d6bc9c', '#96805f', '#4d4030'],
+      head: ['#e5cdac', '#ab9174', '#5e4b36'],
+      breast: ['#f0d0b4', '#c9a184', '#75593f'],
+      tail: ['#9a8168', '#413528'],
+      beakU: ['#4c433a', '#201b16'],
+      beakL: ['#443c34', '#1a1612'],
+      cut: '#33291f',
+      lit: '#f0dcc2',
+      shade: '#1e1810',
+      foot: '#9b7d70',
+      eye: { iris: '#100c09', ring: '#3a3128', glint: '#e8dccb', r: 1.56 },
+      plume: '#a48d76',
+      quill: '#a48d76',
+      cheekSpot: '#33291f',
+      beak: { w: 2.5, base: -11.9, tip: -6, lowW: 2, lowTip: -6.3 },
+      fan: { len: 29, spread: 12, n: 5, w: 2.8, taper: 0.24 },
+      build: { bodyW: 0.94, bodyH: 1.01, head: 0.9 },
+      formO: { body: 0.85, wing: 0.9, head: 0.85, breast: 0.7 },
+    },
+  };
+
+  /** A skin resolved against the shared base, one level deep. */
+  function birdSkin(profile) {
+    const name = BIRD_SKINS[profile] ? profile : 'cuckoo';
+    const own = BIRD_SKINS[name];
+    const out = { ...BIRD_BASE, ...own, name };
+    for (const k of ['eye', 'fan', 'beak', 'build', 'formO']) {
+      out[k] = { ...BIRD_BASE[k], ...(own[k] || {}) };
+    }
+    return out;
+  }
+
+  /**
+   * The whole inside of the bird group for one species, ready to be dropped
+   * into #bird. Everything the frame loop touches keeps its id: #birdTilt,
+   * #beakLower and #beakMouth are part of the contract, not the paint job.
+   */
+  function buildBird(profile) {
+    const s = birdSkin(profile);
+
+    // Its own generator, reseeded from the species name, so a bird always
+    // comes out of the door with exactly the same hand cut irregularities
+    // however many times the paint job is swapped.
+    let bs = 7919;
+    for (const ch of s.name) bs = (bs * 33 + ch.charCodeAt(0)) >>> 0;
+    const brnd = () => { bs = (bs * 1664525 + 1013904223) >>> 0; return bs / 4294967296; };
+    const jit = (a) => fmt((brnd() * 2 - 1) * a);
+
+    // --- the two primitives everything below is made of ------------------
+
+    // One carved mass. The path is drawn around its own local origin, which
+    // is what lets the rim be restated by simply scaling it in a little.
+    const carved = (d, o) => {
+      const g = o.gap ?? 1.05;
+      const k = o.inset ?? 0.9;
+      return `<path d="${d}" fill="${o.fill}" stroke="${o.cut ?? s.cut}" stroke-width="${o.cutW ?? 0.8}"/>
+        <path d="${d}" transform="translate(${fmt(-g * 0.5)} ${fmt(-g)}) scale(${k})" fill="none"
+              stroke="${o.lit ?? s.lit}" stroke-width="${o.litW ?? 0.75}" opacity="${o.litO ?? 0.55}"/>
+        <path d="${d}" transform="translate(${fmt(g * 0.5)} ${fmt(g)}) scale(${k})" fill="none"
+              stroke="${o.shade ?? s.shade}" stroke-width="${o.shadeW ?? 0.85}" opacity="${o.shadeO ?? 0.45}"/>
+        ${o.form ? `<path d="${d}" fill="url(#${o.form})" opacity="${o.formO ?? 1}" pointer-events="none"/>` : ''}`;
+    };
+
+    // A soft contact shadow with no filter behind it: the same outline
+    // restated three times at falling opacity and widening stroke, offset
+    // away from the light. This is what makes a wing sit on a body instead
+    // of next to it, and it is cheap enough to ride on something that moves.
+    const contact = (d, dx, dy, o = 1) => [[4.4, 0.07], [2.8, 0.1], [1.5, 0.13]]
+      .map(([w, a]) => `<path d="${d}" fill="none" stroke="#000000" stroke-width="${w}"
+            opacity="${fmt(a * o)}" transform="translate(${fmt(dx)} ${fmt(dy)})"
+            pointer-events="none"/>`).join('');
+
+    // A cut line and the lit arris just above it: the pair used everywhere
+    // on this clock where a chisel has been through wood.
+    const incise = (d, cutO = 0.62, litO = 0.4, w = 0.75) => `
+      <path d="${d}" stroke="${s.cut}" stroke-width="${w}" fill="none" opacity="${cutO}"/>
+      <path d="${d}" stroke="${s.lit}" stroke-width="${fmt(w * 0.5)}" fill="none" opacity="${litO}"
+            transform="translate(-0.45 -0.6)"/>`;
+
+    // --- gradients, mixed fresh for this species -------------------------
+    const orb = (id, c, cx, cy) => `<radialGradient id="${id}" cx="${cx}" cy="${cy}" r="0.95">
+        <stop offset="0" stop-color="${c[0]}"/>
+        <stop offset="0.64" stop-color="${c[1]}"/>
+        <stop offset="1" stop-color="${c[2]}"/>
+      </radialGradient>`;
+    const soft = (id, c) => `<radialGradient id="${id}" cx="0.5" cy="0.5" r="0.5">
+        <stop offset="0" stop-color="${c}" stop-opacity="1"/>
+        <stop offset="0.7" stop-color="${c}" stop-opacity="0.94"/>
+        <stop offset="1" stop-color="${c}" stop-opacity="0"/>
+      </radialGradient>`;
+
+    const gradients = `<defs>
+      ${orb('bdBody', s.body, 0.33, 0.22)}
+      ${orb('bdBreast', s.breast, 0.36, 0.24)}
+      ${orb('bdHead', s.head, 0.32, 0.2)}
+      ${orb('bdWingN', s.wing, 0.28, 0.18)}
+      ${orb('bdWingF', s.wing, 0.66, 0.22)}
+      <linearGradient id="bdTail" x1="0.15" y1="0" x2="0.85" y2="0.9">
+        <stop offset="0" stop-color="${s.tail[0]}"/>
+        <stop offset="1" stop-color="${s.tail[1]}"/>
+      </linearGradient>
+      <linearGradient id="bdBeakU" x1="0.12" y1="0" x2="0.9" y2="0.85">
+        <stop offset="0" stop-color="${s.beakU[0]}"/>
+        <stop offset="1" stop-color="${s.beakU[1]}"/>
+      </linearGradient>
+      <linearGradient id="bdBeakL" x1="0.12" y1="0" x2="0.9" y2="0.85">
+        <stop offset="0" stop-color="${s.beakL[0]}"/>
+        <stop offset="1" stop-color="${s.beakL[1]}"/>
+      </linearGradient>
+      <radialGradient id="bdMouth" cx="0.5" cy="0.1" r="0.9">
+        <stop offset="0" stop-color="#4a1a0c"/>
+        <stop offset="1" stop-color="#150602"/>
+      </radialGradient>
+      ${s.mask ? soft('bdMask', s.mask) : ''}
+      ${s.cap ? soft('bdCap', s.cap) : ''}
+      ${s.flank ? `<linearGradient id="bdFlank" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="${s.flank}" stop-opacity="0.75"/>
+        <stop offset="1" stop-color="${s.flank}" stop-opacity="0"/>
+      </linearGradient>` : ''}
+      ${s.epaulette ? `<linearGradient id="bdEpR" x1="0.15" y1="0" x2="0.85" y2="1">
+        <stop offset="0" stop-color="${s.epaulette.redHi}"/>
+        <stop offset="1" stop-color="${s.epaulette.red}"/>
+      </linearGradient>
+      <linearGradient id="bdEpB" x1="0.15" y1="0" x2="0.85" y2="1">
+        <stop offset="0" stop-color="${s.epaulette.buffHi}"/>
+        <stop offset="1" stop-color="${s.epaulette.buff}"/>
+      </linearGradient>` : ''}
+      ${s.crest ? `<linearGradient id="bdCrest" x1="0.1" y1="0.1" x2="0.9" y2="0.9">
+        <stop offset="0" stop-color="${s.head[0]}"/>
+        <stop offset="0.55" stop-color="${s.body[1]}"/>
+        <stop offset="1" stop-color="${s.wing[2]}"/>
+      </linearGradient>` : ''}
+    </defs>`;
+
+    // --- blocking --------------------------------------------------------
+    // Every mass is drawn around its own origin and then hung where it goes.
+    const BODY = `M 0 -19.4 C 8.6 -19.6 14.4 -12.6 15.4 -4.4
+       C 16.4 4.2 13.4 14 6.4 18.6 C 2.4 21.2 -3.2 21.2 -7.2 18.4
+       C -14 13.8 -16.6 3.8 -15.6 -4.8 C -14.6 -13 -8.4 -19.2 0 -19.4 Z`;
+    const BREAST = `M 0 -12.6 C 6.4 -12.6 10.2 -6.6 10 0.6
+       C 9.8 7.8 5.6 13.4 0 13.4 C -5.6 13.4 -9.8 7.8 -10 0.6
+       C -10.2 -6.6 -6.4 -12.6 0 -12.6 Z`;
+    const HEAD = `M 0 -9.6 C 4.8 -9.8 8.3 -6.3 8.8 -1.7
+       C 9.2 3 6.3 7.3 1.6 8.1 C -0.9 8.5 -3.2 8.3 -4.9 7.3
+       C -8 5.5 -9.2 1.7 -8.8 -2 C -8.4 -6.5 -4.9 -9.5 0 -9.6 Z`;
+    // The folded wing: broad over the shoulder, then closing to a point that
+    // drifts back in toward the tail the way a real folded wing does.
+    const WING = `M -1.4 -12.4 C 1.9 -12.8 3.9 -9.2 4.7 -3.8
+       C 5.5 1.6 4.6 7.6 1.6 12.6 C 0.4 14.6 -1.5 14.3 -2.1 12.1
+       C -3.7 6.9 -4.7 1 -4.5 -4.2 C -4.3 -9 -3.4 -12 -1.4 -12.4 Z`;
+
+    const bw = s.build.bodyW;
+    const bh = s.build.bodyH;
+
+    // --- tail ------------------------------------------------------------
+    // Drawn root first from the outside in, so the centre feather finishes
+    // on top of the fan the way the real thing overlaps.
+    const tail = (() => {
+      const f = s.fan;
+      const idx = [...Array(f.n).keys()]
+        .sort((a, b) => Math.abs(b - (f.n - 1) / 2) - Math.abs(a - (f.n - 1) / 2));
+      return idx.map((i) => {
+        const u = f.n === 1 ? 0 : (i / (f.n - 1)) * 2 - 1;
+        const rot = fmt(u * f.spread + jit(1.4));
+        const len = fmt(f.len * (1 - f.taper * Math.abs(u)) + jit(0.7));
+        const w = f.w * (1 - 0.16 * Math.abs(u));
+        const d = `M ${fmt(-w)} 1 C ${fmt(-w * 1.08)} ${fmt(len * 0.45)}
+           ${fmt(-w * 0.86)} ${fmt(len * 0.86)} ${fmt(-w * 0.4)} ${len}
+           L ${fmt(w * 0.4)} ${len} C ${fmt(w * 0.86)} ${fmt(len * 0.86)}
+           ${fmt(w * 1.08)} ${fmt(len * 0.45)} ${fmt(w)} 1 Z`;
+        // Barbs run out and back from the shaft, closer together toward the
+        // tip, which is what stops a feather reading as a painted stick.
+        let barbs = '';
+        for (let t = 0.22; t < 0.94; t += 0.16) {
+          const y = fmt(len * t);
+          const bwid = fmt(w * (1 - t * 0.35));
+          barbs += `M 0 ${y} L ${bwid} ${fmt(len * (t + 0.06))} M 0 ${y} L ${fmt(-bwid)} ${fmt(len * (t + 0.06))} `;
+        }
+        return `<g transform="rotate(${rot} 0 3)">
+          <path d="${d}" fill="url(#bdTail)" stroke="${s.cut}" stroke-width="0.55"/>
+          <path d="${barbs}" stroke="${s.quill}" stroke-width="0.4" fill="none" opacity="0.3"/>
+          <path d="M 0 2 L 0 ${fmt(len - 1)}" stroke="${s.shade}" stroke-width="0.7" opacity="0.4"/>
+          <path d="M -0.5 2 L -0.5 ${fmt(len - 2)}" stroke="${s.lit}" stroke-width="0.45" opacity="0.42"/>
+          <!-- the lit edge down the vane the light actually reaches, which is
+               the only thing that separates one dark feather from the next -->
+          <path d="M ${fmt(-w * 0.98)} 3 C ${fmt(-w * 1.04)} ${fmt(len * 0.5)}
+                   ${fmt(-w * 0.84)} ${fmt(len * 0.84)} ${fmt(-w * 0.42)} ${fmt(len - 1)}"
+                fill="none" stroke="${s.lit}" stroke-width="0.5" opacity="0.45"/>
+          <path d="${d}" fill="url(#gFormBody)" opacity="0.24" pointer-events="none"/>
+        </g>`;
+      }).join('');
+    })();
+
+    // --- one folded wing --------------------------------------------------
+    // near = the left one as seen, which is the side the light is on.
+    const wing = (dir, near) => {
+      const g = near ? 'gFormWingN' : 'gFormWingF';
+      // Coverts: two ragged rows of scallops over the shoulder, above where
+      // the flight feathers start.
+      let cov = '';
+      for (let r = 0; r < 2; r += 1) {
+        const y = -9.4 + r * 2.9;
+        for (let i = 0; i < 2; i += 1) {
+          const x = -3.4 + i * 3.1 + r * 0.5 + jit(0.3);
+          cov += `M ${fmt(x)} ${fmt(y + jit(0.4))} q ${fmt(1.5 + jit(0.2))} ${fmt(1.4 + jit(0.3))} ${fmt(3 + jit(0.3))} ${jit(0.4)} `;
+        }
+      }
+      // The flight feathers, five of them, each one its own carved blade
+      // stepping down and in toward the tail. Broad and few beats thin and
+      // many at this size: three hairlines read as scratches, five blades
+      // with a dark cut between them read as a wing that was chiselled.
+      let quills = '';
+      for (let i = 0; i < 5; i += 1) {
+        const x0 = 3.5 - i * 0.5 + jit(0.15);
+        const y0 = -5 + i * 2.55;
+        const len = 8.2 + i * 1.35;
+        const wd = 3.5 - i * 0.32;
+        const qd = `M ${fmt(x0)} ${fmt(y0)}
+           C ${fmt(x0 + wd * 0.5)} ${fmt(y0 + len * 0.36)} ${fmt(x0 + wd * 0.26)} ${fmt(y0 + len * 0.8)} ${fmt(x0 - wd * 0.5)} ${fmt(y0 + len)}
+           C ${fmt(x0 - wd * 1.12)} ${fmt(y0 + len * 0.74)} ${fmt(x0 - wd * 1.28)} ${fmt(y0 + len * 0.34)} ${fmt(x0 - wd)} ${fmt(y0)}
+           C ${fmt(x0 - wd * 0.62)} ${fmt(y0 - 1.3)} ${fmt(x0 - wd * 0.2)} ${fmt(y0 - 1.3)} ${fmt(x0)} ${fmt(y0)} Z`;
+        quills += `<path d="${qd}" fill="url(#bd${near ? 'WingN' : 'WingF'})" stroke="${s.cut}"
+                     stroke-width="0.55"/>
+          <path d="${qd}" fill="none" stroke="${s.lit}" stroke-width="0.45" opacity="${near ? 0.45 : 0.24}"
+                transform="translate(-0.5 -0.6)"/>
+          <path d="M ${fmt(x0 - wd * 0.5)} ${fmt(y0 + 0.4)} C ${fmt(x0 - wd * 0.42)} ${fmt(y0 + len * 0.45)}
+                   ${fmt(x0 - wd * 0.46)} ${fmt(y0 + len * 0.78)} ${fmt(x0 - wd * 0.5)} ${fmt(y0 + len - 0.8)}"
+                fill="none" stroke="${s.quill}" stroke-width="0.35" opacity="0.3"/>
+          <path d="${qd}" fill="url(#${g})" opacity="${fmt(0.42 + i * 0.05)}" pointer-events="none"/>`;
+      }
+      const prim = quills;
+      return `<g transform="translate(${fmt(dir * 10 * bw)} ${fmt(0.4 * bh)}) scale(${dir} 1)">
+        ${contact(WING, 1.5, 1.9, near ? 0.9 : 1.15)}
+        ${carved(WING, {
+    fill: `url(#bd${near ? 'WingN' : 'WingF'})`,
+    form: g,
+    formO: s.formO.wing,
+    litO: near ? 0.62 : 0.32,
+    shadeO: near ? 0.4 : 0.55,
+  })}
+        ${prim}
+        ${incise(cov, 0.55, near ? 0.42 : 0.24, 0.65)}
+        <!-- the shoulder arris, where the folded wing turns over its own bend -->
+        ${incise(`M -3.2 -9.6 C -1 -11.4 1.8 -10.6 3.2 -7.4`, 0.5, near ? 0.5 : 0.28, 0.7)}
+        ${s.epaulette ? `
+        <!-- the epaulette at the bend of the wing: a red shield with a buff
+             band under it, the one mark that has to read at any size -->
+        <path d="M -3 -7.4 C -0.6 -8.8 2 -8.2 3.2 -5.8 C 3.6 -3.6 2.6 -2 0.4 -1.4
+                 C -1.8 -1 -3.4 -2.2 -3.7 -4.4 Z"
+              fill="url(#bdEpR)" stroke="#4a0a05" stroke-width="0.45"/>
+        <path d="M -3 -7.4 C -0.6 -8.8 2 -8.2 3.2 -5.8" fill="none"
+              stroke="#ff8a72" stroke-width="0.5" opacity="0.55" transform="translate(-0.3 -0.4)"/>
+        <path d="M -3.6 -2.2 C -1.4 -0.6 1.2 -0.8 2.8 -2.4 C 3 -0.8 2 0.6 0 1.1
+                 C -1.9 1.5 -3.3 0.6 -3.7 -1 Z"
+              fill="url(#bdEpB)" stroke="#6d4c10" stroke-width="0.42"/>
+        ${contact('M -3.6 -2.2 C -1.4 -0.6 1.2 -0.8 2.8 -2.4', 0.5, 0.7, 0.8)}` : ''}
+      </g>`;
+    };
+
+    // --- leg and foot -----------------------------------------------------
+    // Short and thick, and gripping: the tarsus barely clears the belly
+    // feathers before the toes close over the rod. Long thin legs read as
+    // scratches at this size, not as a bird holding on to something.
+    const leg = (dir) => `<g transform="translate(${fmt(dir * 4.9)} 0) scale(${dir} 1)">
+      <path d="M -1.7 15 C -2 18.4 -1.6 21 -1.1 23.2 L 1.3 23.2
+               C 1.4 20.6 1.6 17.8 1.8 15 Z" fill="${s.foot}" stroke="${s.claw}" stroke-width="0.5"/>
+      <path d="M -1.3 16 C -1.6 19 -1.3 21.4 -0.9 22.9" stroke="${s.lit}" stroke-width="0.5"
+            fill="none" opacity="0.5"/>
+      <path d="M -1.4 17.4 L 1.6 17.2 M -1.4 19.4 L 1.4 19.2 M -1.3 21.4 L 1.3 21.2"
+            stroke="${s.claw}" stroke-width="0.35" opacity="0.45"/>
+      <!-- three toes closed over the rod, each finishing in a horn claw -->
+      <g stroke-linecap="round" fill="none">
+        <path d="M -1.7 22.8 C -3.1 24.4 -3.7 26.2 -3.5 27.6 M 0.2 23.2 C 0.2 25 0.4 26.8 0.8 27.9
+                 M 2 22.8 C 3.1 24.3 3.6 25.9 3.5 27.4"
+              stroke="${s.foot}" stroke-width="1.8"/>
+        <path d="M -2.1 22.9 C -3.4 24.4 -4 26 -3.8 27.3 M -0.2 23.3 C -0.2 25 0 26.6 0.4 27.6
+                 M 1.6 22.9 C 2.7 24.3 3.2 25.7 3.1 27.1"
+              stroke="${s.lit}" stroke-width="0.5" opacity="0.42"/>
+        <path d="M -3.5 27.6 L -3.9 28.7 M 0.8 27.9 L 1 29 M 3.5 27.4 L 4 28.5"
+              stroke="${s.claw}" stroke-width="0.8"/>
+      </g>
+    </g>`;
+
+    // --- eye ---------------------------------------------------------------
+    // A bead sunk into a socket. The socket is not a ring: a ring turns the
+    // bird into an owl. It is an arc of shadow under the low side and an arc
+    // of light over the high one, exactly the pair the bob's beaded rim uses,
+    // and then the bead, a hot glint up toward the light, and a far weaker
+    // bounce opposite it.
+    const eye = (dir) => {
+      const r = s.eye.r;
+      const ex = dir * 5.9;
+      const x = fmt(ex);
+      const arc = (rr, sweep, from, to) => `M ${fmt(ex + rr * Math.cos(from))} ${fmt(-2.2 + rr * Math.sin(from))}
+        A ${fmt(rr)} ${fmt(rr)} 0 0 ${sweep} ${fmt(ex + rr * Math.cos(to))} ${fmt(-2.2 + rr * Math.sin(to))}`;
+      return `<g>
+        <path d="${arc(r + 0.7, 1, -0.35, 2.5)}" fill="none" stroke="${s.shade}"
+              stroke-width="0.9" opacity="0.5" stroke-linecap="round"/>
+        <path d="${arc(r + 0.6, 0, 3.5, 6.1)}" fill="none" stroke="${s.lit}"
+              stroke-width="0.65" opacity="0.55" stroke-linecap="round"/>
+        ${s.eyeRing ? `<path d="${arc(r + 0.55, 0, 3.4, 5.6)} ${arc(r + 0.55, 0, 0.3, 2.3)}"
+              fill="none" stroke="${s.eyeRing}" stroke-width="0.55" opacity="0.62"
+              stroke-linecap="round"/>` : ''}
+        <circle cx="${x}" cy="-2.2" r="${fmt(r)}" fill="${s.eye.ring}"/>
+        <circle cx="${x}" cy="-2.2" r="${fmt(r * 0.76)}" fill="${s.eye.iris}"/>
+        <circle cx="${fmt(ex - 0.52)}" cy="-2.85" r="${fmt(r * 0.3)}" fill="${s.eye.glint}"/>
+        <circle cx="${fmt(ex + 0.62)}" cy="-1.3" r="${fmt(r * 0.18)}" fill="${s.eye.glint}"
+                opacity="0.32"/>
+      </g>`;
+    };
+
+    // --- beak --------------------------------------------------------------
+    // The gape line is fixed at y -9: the frame loop hinges the mouth there
+    // and drops #beakLower from it, so only the width and the reach change
+    // per species. The culmen down the middle is lit on the near side and
+    // shadowed on the far one, which is what keeps it from reading as a
+    // flat triangle stuck on the face.
+    const b = s.beak;
+    const beak = `
+      <!-- the shadow the beak's own root throws back onto the face -->
+      ${contact(`M ${fmt(-b.w - 0.3)} ${fmt(b.base)} L ${fmt(b.w + 0.3)} ${fmt(b.base)} L 0 ${fmt(b.tip)} Z`, 0.7, 0.9, 0.9)}
+      <path id="beakMouth" d="M ${fmt(-b.lowW - 0.2)} -9 L ${fmt(b.lowW + 0.2)} -9 L 0 ${fmt(b.lowTip + 1.1)} Z"
+            fill="url(#bdMouth)" transform="translate(0 -9) scale(1 0.02) translate(0 9)"/>
+      <g id="beakLower">
+        <path d="M ${fmt(-b.lowW)} -9 L ${fmt(b.lowW)} -9 L 0 ${fmt(b.lowTip)} Z"
+              fill="url(#bdBeakL)" stroke="${s.cut}" stroke-width="0.45"/>
+        <path d="M ${fmt(-b.lowW + 0.5)} -8.7 L 0 ${fmt(b.lowTip - 0.4)}"
+              stroke="${s.lit}" stroke-width="0.4" fill="none" opacity="0.45"/>
+      </g>
+      <path d="M ${fmt(-b.w)} ${fmt(b.base)} C ${fmt(-b.w * 0.5)} ${fmt(b.base - 0.5)}
+               ${fmt(b.w * 0.5)} ${fmt(b.base - 0.5)} ${fmt(b.w)} ${fmt(b.base)}
+               C ${fmt(b.w * 0.62)} ${fmt(b.tip * 0.62 + b.base * 0.38)} ${fmt(b.w * 0.3)} ${fmt(b.tip)} 0 ${fmt(b.tip)}
+               C ${fmt(-b.w * 0.3)} ${fmt(b.tip)} ${fmt(-b.w * 0.62)} ${fmt(b.tip * 0.62 + b.base * 0.38)} ${fmt(-b.w)} ${fmt(b.base)} Z"
+            fill="url(#bdBeakU)" stroke="${s.cut}" stroke-width="0.55"/>
+      <path d="M 0 ${fmt(b.base + 0.2)} L 0 ${fmt(b.tip - 0.3)}" stroke="${s.shade}"
+            stroke-width="0.6" opacity="0.35"/>
+      <path d="M -0.55 ${fmt(b.base + 0.4)} L -0.5 ${fmt(b.tip - 0.6)}" stroke="${s.lit}"
+            stroke-width="0.5" opacity="0.5"/>
+      <path d="M ${fmt(-b.w + 0.4)} ${fmt(b.base + 0.5)} C ${fmt(-b.w * 0.6)} ${fmt(b.base + 0.4)} -0.6 ${fmt(b.base + 0.9)} -0.2 ${fmt(b.base + 1.4)}"
+            stroke="${s.lit}" stroke-width="0.45" fill="none" opacity="0.4"/>
+      <circle cx="${fmt(-b.w * 0.42)}" cy="${fmt(b.base + 1.5)}" r="0.35" fill="${s.cut}" opacity="0.7"/>
+      <circle cx="${fmt(b.w * 0.42)}" cy="${fmt(b.base + 1.5)}" r="0.35" fill="${s.cut}" opacity="0.7"/>`;
+
+    // --- breast plumage ----------------------------------------------------
+    // Rows of scallops that narrow with the breast, every scallop taken at
+    // its own width the way the crest coverts are.
+    const scallops = (() => {
+      let d = '';
+      for (let r = 0; r < 5; r += 1) {
+        const y = -8.6 + r * 4.5;
+        const half = 8.8 * Math.sqrt(Math.max(0.06, 1 - ((y - 0.6) / 13.2) ** 2));
+        const n = Math.max(2, Math.round(half / 2.3));
+        for (let i = 0; i < n; i += 1) {
+          const x = -half + ((i + 0.5) / n) * half * 2;
+          const w = (half * 2) / n * 0.94;
+          d += `M ${fmt(x - w / 2)} ${fmt(y + jit(0.45))} q ${fmt(w / 2)} ${fmt(w * 0.5)} ${fmt(w)} ${jit(0.3)} `;
+        }
+      }
+      return `<path d="${d}" stroke="${s.plume}" stroke-width="0.55" fill="none" opacity="${s.plumeO}"/>
+        <path d="${d}" stroke="${s.lit}" stroke-width="0.32" fill="none" opacity="0.3"
+              transform="translate(-0.4 -0.55)"/>`;
+    })();
+
+    return `
+      <g id="birdTilt">
+        ${gradients}
+        <!-- Tail first of everything: it hangs down the far side of the
+             perch, so the rod crosses in front of it and the feet close
+             round the front of the rod in turn. That stack is the whole
+             reason the bird reads as sitting on the perch rather than
+             floating at it. -->
+        <g transform="translate(0 ${fmt(6 * bh)})">${tail}</g>
+
+        <!-- perch rod the bird grips, turned brass with a lit crown -->
+        <path d="M -21 26 L 21 26" stroke="url(#gGoldV)" stroke-width="3.6" stroke-linecap="round"/>
+        <path d="M -19 24.9 L 19 24.9" stroke="#f2d78f" stroke-width="0.7" opacity="0.5"/>
+        <path d="M -19 27.4 L 19 27.4" stroke="#2a1c06" stroke-width="0.8" opacity="0.45"/>
+        <circle cx="-22.4" cy="26" r="2.6" fill="url(#gGoldBoss)" stroke="#3a2605" stroke-width="0.6"/>
+        <circle cx="22.4" cy="26" r="2.6" fill="url(#gGoldBoss)" stroke="#3a2605" stroke-width="0.6"/>
+
+        <!-- legs, in front of the rod and under the belly feathers -->
+        ${leg(-1)}${leg(1)}
+
+        <!-- the body: one round mass, lit up the left flank -->
+        <g transform="translate(0 ${fmt(-2 * bh)}) scale(${fmt(bw)} ${fmt(bh)})">
+          ${carved(BODY, {
+    fill: 'url(#bdBody)',
+    form: 'gFormBody',
+    formO: s.formO.body,
+    cutW: 0.95,
+    gap: 1.2,
+    inset: 0.92,
+  })}
+          <!-- mantle: two carved rows over the shoulders, which is where a
+               folded bird's back actually catches the light -->
+          ${incise(`M -9.6 -14.6 C -5 -17 5 -17 9.6 -14.6 M -12 -9.8 C -6 -12.4 6 -12.4 12 -9.8`, 0.5, 0.42, 0.8)}
+        </g>
+
+        <!-- the breast, a second mass standing proud of the body -->
+        <g transform="translate(0 ${fmt(3 * bh)}) scale(${fmt(bw)} ${fmt(bh)})">
+          ${contact(BREAST, -0.4, -1.4, 0.5)}
+          ${carved(BREAST, {
+    fill: 'url(#bdBreast)',
+    form: 'gFormOrb',
+    formO: s.formO.breast,
+    cutW: 0.5,
+    litO: 0.4,
+    shadeO: 0.3,
+  })}
+          ${scallops}
+          ${s.flank ? `<path d="${BREAST}" fill="url(#bdFlank)" opacity="0.55"
+                transform="translate(-9.4 0) scale(0.92)" pointer-events="none"/>
+          <path d="${BREAST}" fill="url(#bdFlank)" opacity="0.4"
+                transform="translate(9.4 0) scale(-0.92 0.92)" pointer-events="none"/>` : ''}
+          ${s.throat ? `<path d="M 0 -12.4 C 4.6 -12.4 6.6 -9.6 6.2 -6.4
+                   C 3.6 -4.8 -3.6 -4.8 -6.2 -6.4 C -6.6 -9.6 -4.6 -12.4 0 -12.4 Z"
+                fill="${s.throat.c}" opacity="${s.throat.o}"/>` : ''}
+        </g>
+
+        <!-- the folded wings, each its own carved mass sitting on the body -->
+        ${wing(-1, true)}${wing(1, false)}
+
+        <!-- the shadow the head throws down onto the breast, which is what
+             tells the eye the head stands in front of the body -->
+        <ellipse cx="1.2" cy="-8.4" rx="8.4" ry="4" fill="url(#gShadow)" opacity="0.8"
+                 pointer-events="none"/>
+
+        <!-- the head, a small sphere with its own light -->
+        <g transform="translate(0 -17.4) scale(${fmt(s.build.head)})">
+          ${s.crest ? `
+          <!-- The crest, raised and swept back to a point. The cardinal's
+               whole silhouette lives here, so it is carved as its own mass:
+               a lit leading edge up the front, the cut lines of the crest
+               feathers behind it, and the far side dropping into shadow. -->
+          <path d="M -6.2 -4.2 C -6 -11 -3.4 -18.6 0.6 -23.6
+                   C 1.6 -18.4 3.4 -13.8 6.2 -10 C 7.6 -7.6 8.2 -5.4 7.8 -3 Z"
+                fill="url(#bdCrest)" stroke="${s.cut}" stroke-width="0.65"/>
+          <path d="M -5.8 -4.6 C -5.6 -10.8 -3.2 -17.8 0.4 -22.6" fill="none"
+                stroke="${s.lit}" stroke-width="0.7" opacity="0.72"/>
+          <path d="M -2.6 -6.4 C -2 -12.2 -0.4 -16.8 1.6 -20.8
+                   M 1.4 -6.4 C 2.4 -11 3.8 -14.4 5.6 -17.2
+                   M 4.6 -5.4 C 5.6 -8.2 6.6 -10 7.4 -11.4"
+                stroke="${s.shade}" stroke-width="0.55" fill="none" opacity="0.5"/>
+          <path d="M -2.9 -7 C -2.3 -12.6 -0.7 -17.2 1.3 -21.2
+                   M 1.1 -7 C 2.1 -11.4 3.5 -14.8 5.3 -17.6"
+                stroke="${s.lit}" stroke-width="0.35" fill="none" opacity="0.35"/>` : ''}
+          ${carved(HEAD, {
+    fill: 'url(#bdHead)',
+    cutW: 0.75,
+    gap: 1,
+    inset: 0.9,
+    litO: 0.6,
+  })}
+          ${s.cap ? `
+          <!-- black cap, over the crown and down through the eye -->
+          <path d="M 0 -9.7 C 5 -9.9 8.5 -6.4 8.9 -1.2
+                   C 6.6 0 3.6 0.6 0 0.6 C -3.6 0.6 -6.6 0 -8.9 -1.2
+                   C -8.5 -6.4 -5 -9.9 0 -9.7 Z"
+                fill="${s.cap}"/>
+          <path d="M 0 -10.3 C 5.4 -10.5 9 -6.8 9.4 -1.4
+                   C 6.9 0.4 3.7 1.1 0 1.1 C -3.7 1.1 -6.9 0.4 -9.4 -1.4
+                   C -9 -6.8 -5.4 -10.5 0 -10.3 Z"
+                fill="url(#bdCap)" opacity="0.5"/>
+          <path d="M -7.4 -4.6 C -4.2 -6.8 4.2 -6.8 7.4 -4.6" fill="none" stroke="#57544e"
+                stroke-width="0.5" opacity="0.55" transform="translate(-0.3 -0.5)"/>` : ''}
+          ${s.mask ? `
+          <!-- The mask: around the bill, over the chin and back just far
+               enough to take in both eyes. It stops well short of the crown,
+               or the bird stops being a cardinal and turns into a hood. -->
+          <path d="M 0 -5.2 C 4.6 -5.2 7.2 -3.4 7.4 -0.8 C 7.6 2.4 4.8 5.8 0 7
+                   C -4.8 5.8 -7.6 2.4 -7.4 -0.8 C -7.2 -3.4 -4.6 -5.2 0 -5.2 Z"
+                fill="${s.mask}" opacity="0.9"/>
+          <!-- the mask's own edge is feathers, not a cut line, so it is
+               softened back into the red rather than outlined -->
+          <path d="M 0 -6.2 C 5.2 -6.2 8.2 -4 8.4 -0.8 C 8.6 2.8 5.4 6.6 0 8
+                   C -5.4 6.6 -8.6 2.8 -8.4 -0.8 C -8.2 -4 -5.2 -6.2 0 -6.2 Z"
+                fill="url(#bdMask)" opacity="0.45"/>` : ''}
+          ${s.cap ? `
+          <!-- The white cheek: a broad patch on the side of the face under
+               the cap, following the jaw round and stopping short of the
+               chin so the bib has room. It is the brightest thing on the
+               bird, so it is broken by a feather cut rather than left as a
+               flat chip of white. -->
+          <path d="M -8.9 -1 C -7 0.4 -5 1.1 -3.4 1.3 C -3.6 3.8 -4.8 5.8 -6.2 6.8
+                   C -7.8 5.4 -8.7 3 -8.9 -1 Z" fill="#f7f3e8"/>
+          <path d="M 8.9 -1 C 7 0.4 5 1.1 3.4 1.3 C 3.6 3.8 4.8 5.8 6.2 6.8
+                   C 7.8 5.4 8.7 3 8.9 -1 Z" fill="#e4ded0"/>
+          <path d="M -7.9 1.8 C -6.6 2.8 -5.2 3.3 -4 3.5 M 7.9 1.8 C 6.6 2.8 5.2 3.3 4 3.5"
+                fill="none" stroke="#b9b2a0" stroke-width="0.4" opacity="0.6"/>` : ''}
+          ${s.cheekSpot ? `
+          <!-- the dove's ear spot, a small dark crescent low on the cheek -->
+          <path d="M -7.4 1.2 C -6.2 0.4 -5 0.7 -4.7 2 C -5.1 3.3 -6.5 3.5 -7.5 2.6 Z"
+                fill="${s.cheekSpot}" opacity="0.9"/>
+          <path d="M 7.4 1.2 C 6.2 0.4 5 0.7 4.7 2 C 5.1 3.3 6.5 3.5 7.5 2.6 Z"
+                fill="${s.cheekSpot}" opacity="0.75"/>` : ''}
+          <!-- The form wash goes on last, over the paint rather than under
+               it: a black mask or a white cheek has to turn away from the
+               light with the skull it is painted on, or it reads as a hole
+               cut in the head instead of feathers lying on it. -->
+          <path d="${HEAD}" fill="url(#gFormOrb)" opacity="${s.formO.head}" pointer-events="none"/>
+          <!-- crown and cheek feather cuts, so the sphere is carved and not blown -->
+          ${incise(`M -5.4 -7.6 C -2.6 -8.8 2.6 -8.8 5.4 -7.6
+                    M -7.8 -4.6 C -4 -6 4 -6 7.8 -4.6`, 0.35, 0.34, 0.6)}
+          ${incise(`M -9.4 0.4 C -8 2.4 -6.2 3.6 -4.4 4 M 9.4 0.4 C 8 2.4 6.2 3.6 4.4 4`,
+    0.3, 0.3, 0.55)}
+          ${eye(-1)}${eye(1)}
+        </g>
+
+        ${s.bib ? `
+        <!-- the bib: under the chin only, clear of the beak, closing to a
+             soft point where it runs onto the breast -->
+        <path d="M -4.4 -9.6 C -2 -10.4 2 -10.4 4.4 -9.6 C 4.7 -6.4 3.4 -2.8 0 -0.2
+                 C -3.4 -2.8 -4.7 -6.4 -4.4 -9.6 Z"
+              fill="${s.bib}"/>
+        <path d="M -3.4 -6.4 C -1.6 -5.2 1.6 -5.2 3.4 -6.4" fill="none" stroke="#57544e"
+              stroke-width="0.45" opacity="0.55" transform="translate(-0.3 -0.5)"/>` : ''}
+        ${s.throatStreaks ? `
+        <!-- white streaks under the chin, the robin's quiet tell -->
+        <path d="M -3.9 -6.6 L -4.2 -4.6 M -2 -6.9 L -2.1 -4.6 M 2 -6.9 L 2.1 -4.6
+                 M 3.9 -6.6 L 4.2 -4.6"
+              stroke="${s.throatStreaks}" stroke-width="0.6" opacity="0.6" stroke-linecap="round"/>` : ''}
+        ${beak}
+      </g>`;
+  }
+
   const bird = `
     <g id="bird" transform="translate(230 252)" opacity="0">
-      <g id="birdTilt">
-        <!-- perch rod the bird grips -->
-        <path d="M -21 26 L 21 26" stroke="url(#gBrassV)" stroke-width="3.6" stroke-linecap="round"/>
-        <circle cx="-22.4" cy="26" r="2.6" fill="url(#gBrass)" stroke="#3d2a0e" stroke-width="0.6"/>
-        <circle cx="22.4" cy="26" r="2.6" fill="url(#gBrass)" stroke="#3d2a0e" stroke-width="0.6"/>
-        <!-- feet gripping the perch -->
-        <path d="M -8 22 L -9 27 M -6 22.6 L -6 27.4 M -4 22 L -3 27" stroke="#2a1002" stroke-width="1.3" fill="none"/>
-        <path d="M 8 22 L 9 27 M 6 22.6 L 6 27.4 M 4 22 L 3 27" stroke="#2a1002" stroke-width="1.3" fill="none"/>
-        <!-- tail, a fan of three feathers below the body -->
-        <path d="M -8 10 L -11 31 L -4 27 L 0 34 L 4 27 L 11 31 L 8 10 Z"
-              fill="#4a2c12" stroke="#241206" stroke-width="0.8"/>
-        <path d="M -6 14 L -7 27 M 0 15 L 0 30 M 6 14 L 7 27" stroke="#2a180a" stroke-width="0.9" fill="none"/>
-        <!-- body -->
-        <path d="M 0 -27 C 12 -27 17.5 -15 16.5 -2 C 15.5 10 9.5 18 0 18
-                 C -9.5 18 -15.5 10 -16.5 -2 C -17.5 -15 -12 -27 0 -27 Z"
-              fill="url(#gBird)" stroke="#241206" stroke-width="1"/>
-        <!-- folded wings, layered carved feathers down each side -->
-        <path d="M -11 -18 C -16 -12 -17 -2 -14 8 C -11 12 -7 13 -5 10
-                 C -8 2 -8 -8 -5 -14 C -7 -17 -9 -18 -11 -18 Z"
-              fill="#4e2f14" stroke="#241206" stroke-width="0.8"/>
-        <path d="M 11 -18 C 16 -12 17 -2 14 8 C 11 12 7 13 5 10
-                 C 8 2 8 -8 5 -14 C 7 -17 9 -18 11 -18 Z"
-              fill="#4e2f14" stroke="#241206" stroke-width="0.8"/>
-        <path d="M -13 -10 C -11 -8 -9 -8 -7 -9 M -14 -2 C -12 0 -9 0 -7 -1 M -13 5 C -11 7 -8 7 -6 6"
-              stroke="#7a542f" stroke-width="1" fill="none"/>
-        <path d="M 13 -10 C 11 -8 9 -8 7 -9 M 14 -2 C 12 0 9 0 7 -1 M 13 5 C 11 7 8 7 6 6"
-              stroke="#7a542f" stroke-width="1" fill="none"/>
-        <!-- breast plumage, painted cream with scalloped feather rows -->
-        <path d="M 0 -13 C 8 -13 11 -5 10 3 C 9 11 5 15 0 15 C -5 15 -9 11 -10 3 C -11 -5 -8 -13 0 -13 Z"
-              fill="#e0cb9c" opacity="0.94"/>
-        <path d="M -6 -6 C -4 -4.4 -2 -4.4 0 -6 C 2 -4.4 4 -4.4 6 -6
-                 M -7 0 C -5 1.6 -3 1.6 -1 0 C 1 1.6 3 1.6 5 0 M 7 0 C 7.8 1 8.6 1 9 0.6
-                 M -6 6 C -4 7.6 -2 7.6 0 6 C 2 7.6 4 7.6 6 6
-                 M -4 11.4 C -2 12.8 2 12.8 4 11.4"
-              stroke="#a5854e" stroke-width="0.9" fill="none" opacity="0.85"/>
-        <!-- russet throat patch -->
-        <path d="M 0 -13 C 4.6 -13 6.4 -10 6 -7 C 3.4 -5.6 -3.4 -5.6 -6 -7 C -6.4 -10 -4.6 -13 0 -13 Z"
-              fill="#b06a3a" opacity="0.55"/>
-        <!-- carved crown and cheek feather lines -->
-        <path d="M -6 -22 C -3 -20.6 3 -20.6 6 -22 M -8 -17.4 C -4 -16.2 4 -16.2 8 -17.4"
-              stroke="#33200f" stroke-width="0.9" fill="none" opacity="0.7"/>
-        <path d="M -10.5 -12 C -9 -10.4 -7 -9.8 -5 -10 M 10.5 -12 C 9 -10.4 7 -9.8 5 -10"
-              stroke="#33200f" stroke-width="0.8" fill="none" opacity="0.6"/>
-        <!-- eyes, dark beads with a carved ring and a glint -->
-        <circle cx="-6.6" cy="-15" r="2.5" fill="none" stroke="#2a180a" stroke-width="0.8"/>
-        <circle cx="6.6" cy="-15" r="2.5" fill="none" stroke="#2a180a" stroke-width="0.8"/>
-        <circle cx="-6.6" cy="-15" r="1.7" fill="#150a03"/>
-        <circle cx="6.6" cy="-15" r="1.7" fill="#150a03"/>
-        <circle cx="-6" cy="-15.6" r="0.55" fill="#e8d9b4"/>
-        <circle cx="7.2" cy="-15.6" r="0.55" fill="#e8d9b4"/>
-        <!-- beak: fixed upper half, a dark mouth that opens, and a lower
-             half that drops on each note -->
-        <path id="beakMouth" d="M -2.7 -9 L 2.7 -9 L 0 -4.4 Z" fill="#2a1002"
-              transform="translate(0 -9) scale(1 0.02) translate(0 9)"/>
-        <g id="beakLower">
-          <path d="M -2.5 -9 L 2.5 -9 L 0 -5.2 Z" fill="#c4963c" stroke="#241206" stroke-width="0.5"/>
-        </g>
-        <path d="M -3.4 -11.4 L 3.4 -11.4 L 0 -6.6 Z" fill="#d9a944" stroke="#241206" stroke-width="0.6"/>
-        <circle cx="-1" cy="-9.8" r="0.4" fill="#241206"/>
-        <circle cx="1" cy="-9.8" r="0.4" fill="#241206"/>
-      </g>
+      ${buildBird('cuckoo')}
     </g>`;
 
   // Door, surround, dark interior, bird, latch. The door hinges on the left
@@ -1039,6 +1955,33 @@
              M 192 288 L 192 250 A 38 38 0 0 1 268 250 L 268 288 Z"
           fill-rule="evenodd" fill="url(#gWoodV)" stroke="#241608" stroke-width="1"
           filter="url(#fCarved)"/>
+    <!-- The escutcheon: a gilt architrave round the bird's doorway, beaded
+         on the outside and strung on the inside, with a cast rosette at each
+         springing point where the arch takes off from the jamb. The bird is
+         the piece everyone watches for, so its opening is the one part of
+         the case allowed to be openly ornamental. -->
+    ${goldString('M 183.4 300 L 183.4 250 A 46.6 46.6 0 0 1 276.6 250 L 276.6 300', 1.5, 0.95)}
+    ${goldString('M 188.6 300 L 188.6 250 A 41.4 41.4 0 0 1 271.4 250 L 271.4 300', 0.7, 0.6)}
+    ${(() => {
+    // beads run round the outer arris of the architrave, spaced by arc
+    // length so the run does not bunch up where the arch turns over
+    let out = '';
+    for (let i = 0; i <= 26; i += 1) {
+      const a = 180 + (i / 26) * 180;
+      const [bx, by] = polar(230, 250, 49.6, a);
+      out += `<circle cx="${bx}" cy="${by}" r="1.5" fill="url(#gGoldBoss)"/>
+        <circle cx="${fmt(Number(bx) - 0.45)}" cy="${fmt(Number(by) - 0.5)}" r="0.5"
+                fill="#fff3cd" opacity="0.6"/>`;
+    }
+    for (let y = 256; y <= 296; y += 6.6) {
+      for (const bx of [180.4, 279.6]) {
+        out += `<circle cx="${bx}" cy="${fmt(y)}" r="1.5" fill="url(#gGoldBoss)"/>
+          <circle cx="${fmt(bx - 0.45)}" cy="${fmt(y - 0.5)}" r="0.5" fill="#fff3cd" opacity="0.6"/>`;
+      }
+    }
+    return out;
+  })()}
+    ${goldRosette(183.4, 250, 5.4)}${goldRosette(276.6, 250, 5.4)}
     <!-- the dark interior of the case behind the door -->
     <path id="doorHole" d="M ${D.x} ${D.bottom} L ${D.x} ${D.archCy}
           A ${D.archR} ${D.archR} 0 0 1 ${D.x + D.w} ${D.archCy} L ${D.x + D.w} ${D.bottom} Z"
@@ -1058,6 +2001,8 @@
                A ${D.archR - 7} ${D.archR - 7} 0 0 1 ${D.x + D.w - 7} ${D.archCy} L ${D.x + D.w - 7} ${D.bottom - 6} Z"
             fill="none" stroke="#a97f4e" stroke-width="0.7" opacity="0.5"
             transform="translate(0.8 -0.8)"/>
+      ${goldString(`M ${D.x + 11} ${D.bottom - 9} L ${D.x + 11} ${D.archCy}
+               A ${D.archR - 11} ${D.archR - 11} 0 0 1 ${D.x + D.w - 11} ${D.archCy} L ${D.x + D.w - 11} ${D.bottom - 9}`, 0.75, 0.8)}
       <g transform="translate(230 250) scale(0.62)" color="#54371f"><use href="#leafA"/></g>
       <!-- carved fan motifs tucked into the lower corners of the panel -->
       <path d="M 201 280 L 201 272 M 201 280 L 207 274.5 M 201 280 L 209.5 280
@@ -1066,26 +2011,37 @@
       <path d="M 259 280 L 259 272 M 259 280 L 253 274.5 M 259 280 L 250.5 280
                M 259 272 Q 250 273 250.5 280"
             stroke="#2e1c0e" stroke-width="0.9" fill="none" opacity="0.6"/>
-      <circle cx="${D.x + D.w - 12}" cy="266" r="3.2" fill="url(#gBrass)" stroke="#241206" stroke-width="0.7"/>
+      <circle cx="${D.x + D.w - 12}" cy="267" r="3.4" fill="#1c0d05" opacity="0.4"/>
+      <circle cx="${D.x + D.w - 12}" cy="266" r="3.2" fill="url(#gGoldBoss)" stroke="#3a2605" stroke-width="0.6"/>
+      <circle cx="${D.x + D.w - 13}" cy="265" r="1" fill="#fff3cd" opacity="0.6"/>
       <!-- hinge knuckles on the left stile -->
-      <rect x="${D.x - 4}" y="224" width="6" height="12" rx="2.5" fill="url(#gBrassV)" stroke="#241206" stroke-width="0.6"/>
-      <rect x="${D.x - 4}" y="260" width="6" height="12" rx="2.5" fill="url(#gBrassV)" stroke="#241206" stroke-width="0.6"/>
+      <rect x="${D.x - 4}" y="224" width="6" height="12" rx="2.5" fill="url(#gGoldV)" stroke="#3a2605" stroke-width="0.6"/>
+      <rect x="${D.x - 4}" y="260" width="6" height="12" rx="2.5" fill="url(#gGoldV)" stroke="#3a2605" stroke-width="0.6"/>
       <rect id="doorShade" x="${D.x}" y="212" width="${D.w}" height="${D.bottom - 212}"
             fill="#000000" opacity="0"/>
     </g>
-    <!-- shadow the open door throws on the case front -->
-    <rect id="doorShadow" x="${D.x + 8}" y="220" width="${D.w}" height="72" fill="#000000"
+    <!-- The shadow the open door throws. The door hinges on the left and
+         swings out toward the viewer, so with the light coming over the left
+         shoulder the shadow falls onto the case front on the far side of the
+         opening. It used to be cast across the doorway itself, which put a
+         third of a stop of grey over the bird every time it came out and was
+         quietly flattening the one thing everybody looks at. -->
+    <rect id="doorShadow" x="${D.x + D.w - 2}" y="224" width="66" height="74" fill="#000000"
           opacity="0" filter="url(#fBlur7)"/>
     <!-- the catch on the right jamb -->
-    <path d="M 280 232 L 290 232 L 290 248 L 280 248 Z" fill="url(#gBrassV)" stroke="#241206" stroke-width="0.8"/>
-    <circle cx="285" cy="240" r="2" fill="#3d2a0e"/>
+    <path d="M 280 232 L 290 232 L 290 248 L 280 248 Z" fill="url(#gGoldV)" stroke="#3a2605" stroke-width="0.8"/>
+    <circle cx="285" cy="240" r="2" fill="#2e1c03"/>
     <!-- the latch: a pivoting brass bar that swings across the door -->
     <g id="latch" class="ck-click" data-act="latch">
       <g id="latchBar">
         <rect x="${L.latch.px - 4}" y="${L.latch.py - 6}" width="${L.latch.len}" height="12" rx="6"
-              fill="url(#gBrass)" stroke="#3d2a0e" stroke-width="0.9"/>
+              fill="url(#gGold)" stroke="#3a2605" stroke-width="0.9"/>
+        <path d="M ${L.latch.px} ${L.latch.py - 3.4} L ${L.latch.px + L.latch.len - 8} ${L.latch.py - 3.4}"
+              stroke="#fff3cd" stroke-width="1" opacity="0.55" stroke-linecap="round"/>
+        <path d="M ${L.latch.px} ${L.latch.py + 3.6} L ${L.latch.px + L.latch.len - 8} ${L.latch.py + 3.6}"
+              stroke="#241601" stroke-width="1.1" opacity="0.45" stroke-linecap="round"/>
         <circle cx="${L.latch.px + L.latch.len - 14}" cy="${L.latch.py}" r="8.6"
-                fill="url(#gBrass)" stroke="#3d2a0e" stroke-width="0.9"/>
+                fill="url(#gGoldBoss)" stroke="#3a2605" stroke-width="0.9"/>
         <circle cx="${L.latch.px + L.latch.len - 14}" cy="${L.latch.py}" r="3" fill="#3d2a0e" opacity="0.55"/>
         <g id="latchTarnish">
           <ellipse cx="${L.latch.px + 30}" cy="${L.latch.py - 2}" rx="9" ry="3.4" fill="${C.tarnish}" opacity="0.35"/>
@@ -1113,29 +2069,53 @@
     </g>`;
 
   // Pierced hands in the spade and moon style, drawn pointing to twelve.
+  // Pierced and gilded hands. The old bone hands were painted; these are cut
+  // from sheet, fire gilt, and burnished, so each one carries the specular
+  // band down its length and drops its own shadow on the dial a hair below
+  // and right of itself. The pierced rings stay pierced: the dial has to
+  // show through them or the gilding reads as a solid brass paddle.
+  const handShadow = (d) => `<path d="${d}" fill="#2a1608" opacity="0.28"
+        transform="translate(1.5 2)" pointer-events="none"/>`;
+  const HAND_HOUR = `M 0 12 L -3 7 L -3 -16 C -9 -20 -10 -29 0 -38 C 10 -29 9 -20 3 -16 L 3 7 Z
+           M 0 -31.6 A 3.6 3.6 0 1 0 0.01 -31.6 Z`;
+  const HAND_MIN = `M 0 14 L -2.4 7 L -2.4 -28 C -8 -32 -8 -43 0 -52 C 8 -43 8 -32 2.4 -28 L 2.4 7 Z
+           M 0 -45.5 A 3.1 3.1 0 1 0 0.01 -45.5 Z
+           M 0 -37 A 2.3 2.3 0 1 0 0.01 -37 Z`;
   const hands = `
     <g id="handHour" transform="translate(${dial.cx} ${dial.cy})">
-      <path fill-rule="evenodd" fill="${C.bone}" stroke="#241608" stroke-width="1"
-        d="M 0 12 L -3 7 L -3 -16 C -9 -20 -10 -29 0 -38 C 10 -29 9 -20 3 -16 L 3 7 Z
-           M 0 -31.6 A 3.6 3.6 0 1 0 0.01 -31.6 Z"/>
-      <circle cx="0" cy="9" r="4.4" fill="${C.bone}" stroke="#241608" stroke-width="1"/>
+      ${handShadow(HAND_HOUR)}
+      <path fill-rule="evenodd" fill="url(#gGoldV)" stroke="#3d2a06" stroke-width="0.9"
+        d="${HAND_HOUR}"/>
+      <path d="M -1.4 6.8 L -1.4 -16.6 M -1.4 -16.6 C -6.4 -20.4 -7.2 -27.6 -0.8 -35.4"
+            fill="none" stroke="#fff3cd" stroke-width="0.7" opacity="0.62"/>
+      <path d="M 1.6 6.8 L 1.6 -16.2" fill="none" stroke="#2e1f04" stroke-width="0.6" opacity="0.5"/>
+      <circle cx="0" cy="9" r="4.4" fill="url(#gGoldBoss)" stroke="#3d2a06" stroke-width="0.8"/>
     </g>
     <g id="handMin" transform="translate(${dial.cx} ${dial.cy})">
-      <path class="ck-grab" data-act="minute" fill-rule="evenodd" fill="${C.bone}" stroke="#241608" stroke-width="1"
-        d="M 0 14 L -2.4 7 L -2.4 -28 C -8 -32 -8 -43 0 -52 C 8 -43 8 -32 2.4 -28 L 2.4 7 Z
-           M 0 -45.5 A 3.1 3.1 0 1 0 0.01 -45.5 Z
-           M 0 -37 A 2.3 2.3 0 1 0 0.01 -37 Z"/>
+      ${handShadow(HAND_MIN)}
+      <path class="ck-grab" data-act="minute" fill-rule="evenodd" fill="url(#gGoldV)"
+        stroke="#3d2a06" stroke-width="0.9" d="${HAND_MIN}"/>
+      <path d="M -1 6.8 L -1 -28.4 M -1 -28.4 C -5.6 -32.4 -5.8 -41.4 -0.8 -48.6"
+            fill="none" stroke="#fff3cd" stroke-width="0.7" opacity="0.62"/>
+      <path d="M 1.2 6.8 L 1.2 -28" fill="none" stroke="#2e1f04" stroke-width="0.6" opacity="0.5"/>
       <path data-act="minute" class="ck-grab" d="M 0 12 L 0 -50" stroke="#000000"
             stroke-opacity="0" stroke-width="16" fill="none" pointer-events="stroke"/>
-      <circle cx="0" cy="10" r="3.8" fill="${C.bone}" stroke="#241608" stroke-width="1"/>
+      <circle cx="0" cy="10" r="3.8" fill="url(#gGoldBoss)" stroke="#3d2a06" stroke-width="0.8"/>
     </g>
     <g id="handSec" transform="translate(${dial.cx} ${dial.cy})" display="none">
-      <path d="M -1 16 L -0.5 -46 L 0 -58 L 0.5 -46 L 1 16 Z" fill="#2f343b"/>
-      <circle cx="0" cy="-38" r="2.6" fill="none" stroke="#2f343b" stroke-width="1.6"/>
-      <circle cx="0" cy="12" r="3.4" fill="#2f343b"/>
+      <path d="M -1 16 L -0.5 -46 L 0 -58 L 0.5 -46 L 1 16 Z" fill="#2f343b"
+            transform="translate(1.2 1.6)" opacity="0.3"/>
+      <path d="M -1 16 L -0.5 -46 L 0 -58 L 0.5 -46 L 1 16 Z" fill="#8f2f1c"/>
+      <circle cx="0" cy="-38" r="2.6" fill="none" stroke="#8f2f1c" stroke-width="1.6"/>
+      <circle cx="0" cy="12" r="3.4" fill="#8f2f1c"/>
     </g>
-    <circle cx="${dial.cx}" cy="${dial.cy}" r="5.2" fill="url(#gBrass)" stroke="#3d2a0e" stroke-width="0.8"/>
-    <circle cx="${dial.cx}" cy="${dial.cy}" r="1.7" fill="#3d2a0e"/>`;
+    <!-- the collet: a turned gilt boss over the arbor, with the burnished
+         ring the hand nut has worn into it -->
+    <circle cx="${dial.cx}" cy="${dial.cy}" r="6" fill="url(#gGoldBoss)" stroke="#3d2a06" stroke-width="0.9"/>
+    <circle cx="${dial.cx}" cy="${dial.cy}" r="4.1" fill="none" stroke="#5e420e" stroke-width="0.7" opacity="0.7"/>
+    <circle cx="${fmt(dial.cx - 0.5)}" cy="${fmt(dial.cy - 0.6)}" r="3.9" fill="none"
+            stroke="#fff3cd" stroke-width="0.55" opacity="0.55"/>
+    <circle cx="${dial.cx}" cy="${dial.cy}" r="1.7" fill="#2e1f04"/>`;
 
   // ------------------------------------------------------------------
   // The moon aperture. A phase indicator on the dial is genuine Black
@@ -1206,13 +2186,10 @@
         <circle r="${MOON.disc}" fill="none" stroke="#6f6248" stroke-width="0.45" opacity="0.55"/>
       </g>
       <!-- the bezel: a turned brass ring seated in the face, lit upper left -->
-      <circle cx="${MOON.cx}" cy="${MOON.cy}" r="${fmt(MOON.r + 1.1)}" fill="none"
-              stroke="url(#gBrass)" stroke-width="2.1"/>
+      ${goldRing(MOON.cx, MOON.cy, MOON.r + 1.1, 2.4)}
       <circle cx="${MOON.cx}" cy="${MOON.cy}" r="${fmt(MOON.r + 2.3)}" fill="none"
               stroke="#3d2a0e" stroke-width="0.6" opacity="0.75"/>
-      <path d="M ${fmt(MOON.cx - 8.6)} ${fmt(MOON.cy - 7.4)}
-               A ${fmt(MOON.r + 1.1)} ${fmt(MOON.r + 1.1)} 0 0 1 ${fmt(MOON.cx + 3)} ${fmt(MOON.cy - 11.3)}"
-            stroke="#f8e6ae" stroke-width="0.8" fill="none" opacity="0.6"/>
+      ${goldBeads(MOON.cx, MOON.cy, MOON.r + 3.6, 0.95, 18)}
       <path d="M ${fmt(MOON.cx - 3.4)} ${fmt(MOON.cy + 11.4)}
                A ${fmt(MOON.r + 1.1)} ${fmt(MOON.r + 1.1)} 0 0 1 ${fmt(MOON.cx + 8.2)} ${fmt(MOON.cy + 7.8)}"
             stroke="#4a3312" stroke-width="0.8" fill="none" opacity="0.55"/>
@@ -1247,11 +2224,24 @@
       <circle cx="${dial.cx}" cy="${dial.cy}" r="${dial.face + 3}" fill="none"
               stroke="#2e1c0e" stroke-width="2.3" stroke-dasharray="4.4 3.2"/>
     </g>
+    <!-- The gilt bezel: an outer astragal round the rim of the ring, and a
+         seated fillet where the ring meets the dial plate. Both are turned
+         mouldings, so each gets the treatment every turned edge on this
+         case gets: the section restated lit above and shadowed below. -->
+    ${goldRing(dial.cx, dial.cy, dial.ring - 2.6, 3.4)}
+    ${goldRing(dial.cx, dial.cy, dial.face + 1.4, 2.6)}
+    ${goldBeads(dial.cx, dial.cy, dial.ring - 7.4, 1.35, 60)}
     <circle cx="${dial.cx}" cy="${dial.cy}" r="${dial.face}" fill="url(#gFace)"/>
+    <!-- the shadow the bezel throws inward across the dial plate -->
+    <circle cx="${dial.cx}" cy="${dial.cy}" r="${fmt(dial.face - 1.4)}" fill="none"
+            stroke="#5c3a16" stroke-width="3.2" opacity="0.2"/>
+    <circle cx="${dial.cx}" cy="${dial.cy}" r="${fmt(dial.face - 0.4)}" fill="none"
+            stroke="#3a2109" stroke-width="1.1" opacity="0.28"/>
     <circle id="dialAged" cx="${dial.cx}" cy="${dial.cy}" r="${dial.face}"
             filter="url(#fAged)" opacity="0.65"/>
     ${foxing}
     <g id="minuteTrack">${buildMinuteTrack()}</g>
+
     <g id="numerals12">${buildNumerals(12)}</g>
     <g id="numerals24" display="none">${buildNumerals(24)}</g>
     ${moonAperture}
@@ -1266,13 +2256,15 @@
       <g id="${id}Arm">
         <path d="M 0 0 C ${12 * dir} 3 ${26 * dir} 4 ${36 * dir} -2
                  C ${44 * dir} -7 ${42 * dir} -16 ${34 * dir} -14"
-              fill="none" stroke="#8f6f33" stroke-width="3.4" stroke-linecap="round"/>
+              fill="none" stroke="#7a5a16" stroke-width="3.6" stroke-linecap="round"/>
         <path d="M 0 0 C ${12 * dir} 3 ${26 * dir} 4 ${36 * dir} -2"
-              fill="none" stroke="#e8c877" stroke-width="1.1" stroke-linecap="round" opacity="0.7"/>
-        <circle cx="${34 * dir}" cy="-14" r="4.6" fill="url(#gCone)" stroke="#241206" stroke-width="0.8"/>
+              fill="none" stroke="#ffedb4" stroke-width="1.2" stroke-linecap="round" opacity="0.75"/>
+        <circle cx="${34 * dir}" cy="-14" r="4.6" fill="url(#gGoldBoss)" stroke="#3a2605" stroke-width="0.8"/>
+        <circle cx="${34 * dir - 1.4}" cy="-15.4" r="1.4" fill="#fff3cd" opacity="0.6"/>
       </g>
-      <circle cx="0" cy="0" r="6" fill="url(#gBrass)" stroke="#3d2a0e" stroke-width="0.9"/>
-      <circle cx="0" cy="0" r="2" fill="#3d2a0e"/>
+      <circle cx="0" cy="0" r="6.4" fill="url(#gGoldBoss)" stroke="#3a2605" stroke-width="0.9"/>
+      <circle cx="0" cy="0" r="2" fill="#2e1c03"/>
+      <circle cx="-1.6" cy="-1.8" r="1.5" fill="#fff3cd" opacity="0.5"/>
       <rect x="${dir > 0 ? -6 : -54}" y="-30" width="60" height="60"
             fill="#000000" fill-opacity="0" pointer-events="all"/>
     </g>`;
@@ -1305,12 +2297,14 @@
       <g id="bob" class="ck-click" data-act="bob"
          transform="translate(${L.pend.px} ${L.pend.bobY})">
         <g transform="scale(1.22)">
-        <!-- a carved oak leaf bob: deep lobes, raised veins, worn rim light -->
+        <!-- A cast and chased gilt oak leaf: deep lobes, raised veins, and
+             the burnish worn back to a hot line on the rim by however many
+             thousand times a thumb has stopped this pendulum. -->
         <path d="M 0 -38 C 9 -37 13 -31 11 -25 C 19 -27 25 -21 21 -13
                  C 29 -13 31 -3 23 1 C 29 7 25 17 15 15 C 17 25 7 31 0 27
                  C -7 31 -17 25 -15 15 C -25 17 -29 7 -23 1 C -31 -3 -29 -13 -21 -13
                  C -25 -21 -19 -27 -11 -25 C -13 -31 -9 -37 0 -38 Z"
-              fill="url(#gBob)" stroke="#241206" stroke-width="1.2"/>
+              fill="url(#gBob)" stroke="#3a2605" stroke-width="1.2"/>
         <!-- beaded rim: the outline restated just inside the edge, lit high,
              shadowed low, so the edge reads as a rounded carved bead -->
         <path d="M 0 -38 C 9 -37 13 -31 11 -25 C 19 -27 25 -21 21 -13
@@ -1318,22 +2312,22 @@
                  C -7 31 -17 25 -15 15 C -25 17 -29 7 -23 1 C -31 -3 -29 -13 -21 -13
                  C -25 -21 -19 -27 -11 -25 C -13 -31 -9 -37 0 -38 Z"
               transform="translate(0 -1.6) scale(0.9)"
-              fill="none" stroke="#c99a5c" stroke-width="0.9" opacity="0.45"/>
+              fill="none" stroke="#fff3cd" stroke-width="0.9" opacity="0.55"/>
         <path d="M 0 -38 C 9 -37 13 -31 11 -25 C 19 -27 25 -21 21 -13
                  C 29 -13 31 -3 23 1 C 29 7 25 17 15 15 C 17 25 7 31 0 27
                  C -7 31 -17 25 -15 15 C -25 17 -29 7 -23 1 C -31 -3 -29 -13 -21 -13
                  C -25 -21 -19 -27 -11 -25 C -13 -31 -9 -37 0 -38 Z"
               transform="translate(0 1.4) scale(0.9)"
-              fill="none" stroke="#1e0f04" stroke-width="1" opacity="0.5"/>
+              fill="none" stroke="#241601" stroke-width="1" opacity="0.5"/>
         <!-- chisel shadow inside each lobe, then the worn highlight on the rim -->
         <path d="M 0 -34 C 7 -33 10 -29 9 -25 M 15 -19 C 18 -16 18 -13 16 -11
                  M 20 -3 C 22 0 21 3 18 5 M 14 13 C 14 17 11 20 8 20
                  M -9 -25 C -10 -29 -7 -33 0 -34 M -16 -11 C -18 -13 -18 -16 -15 -19
                  M -18 5 C -21 3 -22 0 -20 -3 M -8 20 C -11 20 -14 17 -14 13"
-              stroke="#2e1c0e" stroke-width="1.1" fill="none" opacity="0.7"/>
+              stroke="#3a2605" stroke-width="1.1" fill="none" opacity="0.65"/>
         <path d="M -11 -32 C -17 -28 -21 -21 -20 -13 M -24 -5 C -25 -1 -24 3 -21 6
                  M -16 12 C -15 16 -12 19 -8 20"
-              stroke="#c99a5c" stroke-width="1.1" fill="none" opacity="0.6"/>
+              stroke="#fff3cd" stroke-width="1.1" fill="none" opacity="0.6"/>
         <!-- scalloped gouge marks at the lobe sinuses, the chisel's signature -->
         <path d="M 11.5 -28.5 q 3.5 -1.5 5.5 1.5 M 24.5 -16 q 3.5 0.5 4 4
                  M 26.5 4.5 q 3 2 1.5 5.5 M 17 18.5 q 1.5 3.5 -1.5 5.5
@@ -1343,18 +2337,18 @@
         <!-- raised central and side veins, dark cut with a lit edge -->
         <path d="M 0 -36 L 0 27 M 0 -18 L 12 -24 M 0 -18 L -12 -24
                  M 0 -4 L 17 -8 M 0 -4 L -17 -8 M 0 10 L 11 14 M 0 10 L -11 14"
-              stroke="#33200f" stroke-width="1.5" fill="none"/>
+              stroke="#3a2605" stroke-width="1.5" fill="none"/>
         <path d="M 0 -36 L 0 27 M 0 -18 L 12 -24 M 0 -18 L -12 -24
                  M 0 -4 L 17 -8 M 0 -4 L -17 -8 M 0 10 L 11 14 M 0 10 L -11 14"
-              stroke="#b98b52" stroke-width="0.6" fill="none" opacity="0.7"
+              stroke="#ffedb4" stroke-width="0.6" fill="none" opacity="0.75"
               transform="translate(-0.7 -0.7)"/>
         <!-- finer secondary veins between the mains -->
         <path d="M 0 -27 L 9 -32 M 0 -27 L -9 -32 M 0 3 L 14.5 0.5 M 0 3 L -14.5 0.5
                  M 0 18 L 8 23 M 0 18 L -8 23"
-              stroke="#33200f" stroke-width="0.85" fill="none" opacity="0.85"/>
+              stroke="#3a2605" stroke-width="0.85" fill="none" opacity="0.8"/>
         <path d="M 0 -27 L 9 -32 M 0 -27 L -9 -32 M 0 3 L 14.5 0.5 M 0 3 L -14.5 0.5
                  M 0 18 L 8 23 M 0 18 L -8 23"
-              stroke="#b98b52" stroke-width="0.4" fill="none" opacity="0.6"
+              stroke="#ffedb4" stroke-width="0.4" fill="none" opacity="0.65"
               transform="translate(-0.5 -0.5)"/>
         <!-- long grain arcs following the leaf, drawn by hand because the
              pendulum animates and filters stay on static geometry only -->
@@ -1363,7 +2357,7 @@
         <path d="M -3 -33 C -5 -14 -5 10 -2 26 M 10 -24 C 13 -8 12 8 7 21"
               stroke="#a9804d" stroke-width="0.5" fill="none" opacity="0.3"/>
         <!-- brass ferrule where the rod enters the leaf -->
-        <path d="M -3.4 -44 L 3.4 -44 L 2.6 -32 L -2.6 -32 Z" fill="url(#gBrassV)" stroke="#3d2a0e" stroke-width="0.7"/>
+        <path d="M -3.4 -44 L 3.4 -44 L 2.6 -32 L -2.6 -32 Z" fill="url(#gGoldV)" stroke="#3a2605" stroke-width="0.7"/>
         <!-- Stopping and starting a clock means catching the bob, and it is
              always caught in the same place: the finish goes off the high
              ground of the veins first, then the whole middle of the leaf. -->
@@ -1501,6 +2495,7 @@
   let settings = {
     showSeconds: false, twentyFourHour: false, silent: false, latched: false,
     nightSilence: false, pendulumLeaf: 0.5, pendulumRunning: true, runtimeHours: 30,
+    birdProfile: 'cuckoo',
   };
   let movement = {
     offsetMs: 0, running: true, beatMs: 500, beatEpoch: Date.now(),
@@ -1578,33 +2573,42 @@
     const stats = settings.stats || {};
     const winds = stats.chainWinds || {};
 
+    // Flipping the switch has to read immediately, months before the slow
+    // curves below have anything to show for themselves, or it looks broken.
+    // This floors every on-gated term at 12% presence the instant it's
+    // enabled, then lets the real curve carry it the rest of the way to 100%.
+    const presence = (v) => 0.12 + v * 0.88;
+
     // Age is only ever measured from a timestamp the backend actually set.
     // A missing installedAt means a clock with no history, not an old one.
     const age = on && settings.installedAt
-      ? aged((Date.now() - settings.installedAt) / DAY) : 0;
+      ? presence(aged((Date.now() - settings.installedAt) / DAY)) : 0;
     const session = on
       ? 1 - Math.exp(-Math.max(0, Date.now() - appStartedAt) / (DAY / 6)) : 0;
 
     setOpacity(el.patina.wood, age * 0.16);
     setOpacity(el.patina.brass, age * 0.42);
     setOpacity(el.patina.foxing, age * 0.36);
-    setOpacity(el.patina.dialAged, 0.65 + age * 0.14);
+    // Dial and arris shading have a natural-material baseline even with the
+    // system off, but it has to visibly step down, not stay put, so the
+    // toggle itself is never a no-op.
+    setOpacity(el.patina.dialAged, on ? 0.65 + age * 0.14 : 0.5);
     // The case only really settles into the room over the first few hours of
     // a run, so a fresh launch sits a shade cooler than one left alone all day.
     setOpacity(el.patina.session, session * 0.1);
     // The arrises are the one thing hands find without meaning to.
-    setOpacity(el.patina.arrisL, 0.6 + age * 0.16);
-    setOpacity(el.patina.arrisR, 0.5 + age * 0.16);
+    setOpacity(el.patina.arrisL, on ? 0.6 + age * 0.16 : 0.44);
+    setOpacity(el.patina.arrisR, on ? 0.5 + age * 0.16 : 0.34);
 
-    const latch = on ? handled(stats.latchTouches) : 0;
+    const latch = on ? presence(handled(stats.latchTouches)) : 0;
     setOpacity(el.patina.latch, latch * 0.85);
     // Handling takes the tarnish back off the same brass age is putting it on.
     setOpacity(el.patina.latchTarnish, 1 - latch * 0.7);
 
-    setOpacity(el.patina.bob, (on ? handled(stats.bobTouches) : 0) * 0.6);
+    setOpacity(el.patina.bob, (on ? presence(handled(stats.bobTouches)) : 0) * 0.6);
 
     for (const c of L.chains) {
-      const w = on ? handled(winds[c.train]) : 0;
+      const w = on ? presence(handled(winds[c.train])) : 0;
       setOpacity(el.patina.chain[c.train], w * 0.5);
       setOpacity(el.patina.pulley[c.train], w * 0.6);
       setOpacity(el.patina.hanger[c.train], w * 0.75);
@@ -1623,7 +2627,30 @@
     if (settings.moonPhaseEnabled !== undefined) {
       setOpacity(el.moonRing, settings.moonPhaseEnabled ? 1 : 0);
     }
+    applyBirdProfile();
     applyPatina();
+  }
+
+  // Which species is currently painted on the armature. Repainting is a
+  // whole new bird's worth of markup, so it only ever happens when the
+  // profile actually changes, never on a settings push that left it alone
+  // and never per frame: the frame loop drives whatever paint job is there.
+  let paintedBird = 'cuckoo';
+
+  function applyBirdProfile() {
+    const next = BIRD_SKINS[settings.birdProfile] ? settings.birdProfile : 'cuckoo';
+    if (next === paintedBird) return;
+    paintedBird = next;
+    el.bird.innerHTML = buildBird(next);
+    // The armature is rebuilt, so the handles the frame loop holds onto are
+    // stale. Everything outside #bird, including #bird itself, is untouched.
+    el.birdTilt = $('#birdTilt');
+    el.beakLower = $('#beakLower');
+    el.beakMouth = $('#beakMouth');
+    // The craning transform is only written when it changes, and the fresh
+    // group has none, so the cached value has to be dropped or a repaint
+    // mid peek would leave the new bird staring straight ahead.
+    anim.look = null;
   }
 
   // Patina drifts on a scale of hours, so it is repainted on a slow timer

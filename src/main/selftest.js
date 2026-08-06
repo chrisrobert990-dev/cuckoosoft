@@ -346,6 +346,7 @@ async function run(ctx, win, chime) {
       Math.abs(ratio - 460 / 820) < 0.02,
       ratio.toFixed(3),
     );
+    if (scale === 2.4) await screenshot(win, report, '06-scaled-240');
   }
   report.check('resizable window', win.isResizable());
   const grip = await win.webContents.executeJavaScript(

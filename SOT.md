@@ -1,18 +1,231 @@
 # CuckooSoft — Source of Truth
-_Last updated: 2026-08-05 by Opus 5, V3 front end built (patina, quirks, moon)_
+_Last updated: 2026-08-05 by Opus 5, bird depth + species pass and gilt luxury pass_
 
 ## Current Status (read this first)
-**V3 is now complete end to end.** The three character features (patina and
-aging, rare quirks, moon phase) had working backends but no visuals at the
-start of this session; all three are now built, gated by their toggles, and
-verified in a live app. The popover has a new "Character" section with all
-three toggles. Two extra visual changes were made at the user's direct
-request mid session: **the dial now uses Arabic figures instead of Roman
-numerals**, and **the pine cone weights were rebuilt from scratch** as real
-fir cones. Self test is 47/48, the one failure being the same understood
-time of day flake documented at the bottom of this file.
+**Bug 5 from the six bug report is closed, and the case has had a full gilt
+and depth pass on top of it.** All six bird profiles now render as visually
+distinct species with hand built carved depth, `settings.birdProfile` is
+wired into the renderer, and the rest of the clock was brought up to the same
+standard: figured rosewood in place of the old walnut, a fielded front panel
+with gold stringing and cast rosettes, a gilt dial (bezel, beaded chapter
+ring, applied gilt figures, pierced gilt hands), a gilt escutcheon round the
+bird door, gilt fillets through every moulding joint, a gilt bronze crest
+eagle on the gable, a gilt oak leaf pendulum bob, and parcel gilt garland
+foliage. Self test is 48/48 with zero renderer, panel and process errors.
 
-## What Was Done This Session (Opus 5, V3 front end)
+## What Was Done This Session (Opus 5, bird depth + gilt luxury pass)
+
+### Part one: the bird (the outstanding bug 5)
+All in `src/renderer/clock.js`. The old bird was one 60 line block used for
+all six profiles, filled with a flat two stop `gBird` linear gradient.
+
+1. **Rebuilt as `buildBird(profile)`**, a generator keyed by a per species
+   skin. `BIRD_BASE` holds everything shared, `BIRD_SKINS` holds only what a
+   species does differently, and `birdSkin()` merges them one level deep. The
+   armature (perch, blocking, hinged beak, the `#birdTilt` / `#beakLower` /
+   `#beakMouth` ids the frame loop drives) is identical for all six; only the
+   palette, the plumage detail and a handful of species accents change.
+2. **Depth is hand built, not filtered.** `fCarved`'s turbulence was tried and
+   rejected for the bird: it was tuned for slab sized surfaces and at the ~60
+   units the bird spans it reads as dirt, and the bird is the only carved
+   thing on the clock that moves, so a filter on it would re-run every frame
+   of every strike. Instead each mass follows the pendulum bob's method, now
+   factored into two local helpers inside `buildBird`:
+   - `carved(d, o)` — local colour, then the silhouette restated just inside
+     itself twice (lifted toward the light, dropped away from it), then one
+     directional form wash. Paths are drawn around their own origin so the
+     rim can be restated with a plain `scale()`.
+   - `contact(d, dx, dy)` — a soft shadow with no filter behind it: the same
+     outline restated three times at falling opacity and widening stroke,
+     offset away from the light. This is what puts a wing *on* a body rather
+     than beside it.
+   Four colour free form washes were added to the main `<defs>`
+   (`gFormBody`, `gFormOrb`, `gFormWingN`, `gFormWingF`) and are reused by
+   every species. Their shadow end is warm (`#1a0e05`), not black: pure black
+   was draining the colour out of the dove and the robin.
+3. **New blocking:** separate body, breast, head sphere, two folded wings
+   (near one lit, far one turned out of the light, different gradients and
+   washes), five carved flight feather blades per wing, a five feather tail
+   fan hung behind the perch, short gripping legs and feet, and a head cast
+   shadow onto the breast.
+4. **The head form wash goes on last**, over the face accents rather than
+   under them, so a cardinal's black mask or a chickadee's white cheek turns
+   with the skull instead of reading as a hole cut in it.
+5. **Six species**, each with palette plus its own accents: cardinal (crest,
+   feathered mask, orange bill), red-winged blackbird (cool blue sheen on
+   black, red and buff epaulette at the wing bend), American robin (grey
+   brown back, brick breast, broken eye ring, throat streaks), chickadee
+   (black cap through the eye, two separate white cheeks, shield bib, buff
+   flanks, small dainty build), mourning dove (warm fawn, ear spot, long
+   tail, small head), cuckoo (unchanged identity, warm carved wood, now with
+   the depth pass).
+6. **Wiring:** `applyBirdProfile()` is called from `applySettings()`, repaints
+   `#bird`'s innerHTML only when `settings.birdProfile` actually changes,
+   re-queries the three stale element handles, and clears `anim.look` so a
+   repaint mid peek does not leave the new bird staring straight ahead.
+7. **Fixed a real bug found while doing this:** `#doorShadow` was a blurred
+   black rect drawn *over* the doorway at up to 0.32 opacity, so the open
+   door's shadow was falling across the bird every time it came out and
+   flattening the one thing everybody looks at. It now falls on the case
+   front to the right of the opening, which is where the light direction puts
+   it anyway.
+
+### Part two: the gilt and depth pass on the rest of the case
+Asked for mid session ("gold elements and embellishments, as though it were a
+million dollar cuckoo clock ... make sure the rest of the clock matches that
+look/feel"). All in `clock.js`.
+
+- **Gilt system in `<defs>`:** `gGold` (diagonal, narrow hot specular between
+  deep burnt shadows, which is what separates fire gilding from brass),
+  `gGoldV`, `gGoldH`, `gGoldBoss` (radial, for turned bosses), and
+  `gGiltForm`, the wash laid over finished gilt. Gold shades to burnt amber,
+  never to black.
+- **Five reusable gilt fittings**, defined near the top of the file above
+  `WING_MASS`: `goldRing`, `goldBeads`, `goldFillet`, `goldRosette` and
+  `goldString` (inlay: the cut, then the metal sitting proud of it). Every
+  one restates its section lit through the upper left and burnt through the
+  lower right, the same rule the woodwork uses.
+- **Wood:** the `C` palette and `gWoodV` / `gWoodPost` / `gWoodPostR` /
+  `gRoof` / `gBarge` / `gRing` moved from aged walnut to figured rosewood,
+  red in the mid tone and near black in the recesses so gilt has something
+  dark to sit on.
+- **Front panel is now fielded, not flat:** a bevel round all four sides (two
+  lit, two shadowed), a sunken field, double gilt stringing and a cast
+  rosette in each corner. The vertical grain filter came down from 0.85 to
+  0.62 because it was reading as streaks.
+- **Dial:** two turned gilt rings, a 60 bead bezel, applied gilt figures each
+  with its own drop shadow on the bone, pierced gilt hands with a burnished
+  centre line and their own shadow, a gilt collet, and a gilt moon bezel with
+  beads.
+- **Bird door:** gilt architrave (beaded outside, strung inside) with a
+  rosette at each springing point, gilt door beading, knob, hinges, catch and
+  latch bar.
+- **Elsewhere:** gilt fillets at every moulding joint, alternate dentils
+  gilded, the base bead row turned in gilt, gilt cresting drops in the eave
+  overhang, gilt astragals down both bargeboards, a gilt bronze crest eagle
+  (the crest bird's wings, body, head and tail, with the wood foliage left as
+  wood behind it), a gilt oak leaf pendulum bob with chased veins, gilt cone
+  caps, gilt lever finials, a gilt line following the apron, and a gilt
+  fillet down each post arris.
+- **Depth on the rest:** the roof gets a per slope form wash (left plane lit,
+  right plane turned out of the light) over the finished shingles; the
+  bargeboards get one too; the garland leaves were rebuilt in the `<defs>`
+  with a restated rim, gilt ribs and a form wash, and the `fCarved` /
+  `fCarvedDeep` filters were **removed** from both garlands, since the
+  turbulence was muddying carving that is now actually there.
+
+## What Was Done In The Previous Session (Claude, live bug fix pass)
+The user reported six bugs found while actually running the finished app.
+All work in `src/renderer/clock.js` and `src/main/chime.js`, i.e. this
+session crossed the standing backend/frontend division of labour for direct
+bug fixes (not new visual features) since the same person who wrote the
+original filters/geometry could diagnose and correct them fastest; new
+creative visual work (bug 5 below) was still handed off, consistent with the
+standing rule.
+
+1. **"The patina switch does nothing."** Not a wiring bug, confirmed by
+   reading the real live `settings.json`: `installedAt` was about 93 minutes
+   old and `stats` counters were nearly all zero, so `aged()` (a 240 day time
+   constant) and `handled()` (25 touches) were both computing values under
+   0.1%, indistinguishable from off regardless of the toggle. Worse,
+   `dialAged`/`arrisL`/`arrisR` had a baseline opacity that didn't fully
+   depend on the `on` flag at all, so even a fully-aged-vs-off comparison
+   wouldn't have shown much difference on those three layers specifically.
+   Fixed in `applyPatina()` (`clock.js`, around line 1576): added a
+   `presence(v) = 0.12 + v * 0.88` floor so every age/handled-gated layer
+   jumps to about 12% immediately on enable rather than needing months to
+   become visible, and gave `dialAged`/`arrisL`/`arrisR` real, distinct
+   off-state values (0.5/0.44/0.34) instead of sharing the on-state baseline.
+   The slow multi-month growth curve itself is untouched, only the
+   immediately-visible floor and the true off-state changed.
+2. **"The clock face is getting blurry when scaling."** Confirmed genuinely
+   real via a self test screenshot at 240% scale (added a 6th permanent
+   screenshot, `06-scaled-240`, to `selftest.js` for future regression
+   checks). Ruled out non-SVG content first (no canvas, no `<img>`, no
+   `background-image`, no problematic CSS `transform: scale`, all clean).
+   Root cause: the `feTurbulence`-based grain/carving filters
+   (`fGrainV`/`fGrainH`/`fCarved`/`fCarvedDeep`/`fAged` in `clock.js`'s
+   `<defs>`) use noise frequencies tuned to look right at 100%; blown up
+   2.4x the same noise reads as soft haze instead of fine grain, because the
+   noise's own spatial frequency doesn't increase with scale even though
+   vector edges (numerals, hands, door) do stay crisp. Tried `filterRes`
+   first (a real SVG attribute for exactly this), confirmed by screenshot
+   that Chromium ignores it, reverted. Actual fix: raised `baseFrequency`
+   and `numOctaves` on all five filters (roughly doubled), which sharpens
+   the texture at every scale without changing how it reads at 100%.
+   Visually confirmed via before/after screenshot at 240%, night and day
+   difference, wall grain and roof shingles read as fine texture again
+   instead of a haze.
+3. **"I don't want any part of the clock being see-through, the bottom fades
+   out."** Confirmed with real alpha-channel pixel sampling on the 240%
+   screenshot (Python/Pillow), not just eyeballing: the base moulding rect
+   (`x=68 width=324`, so it spans x 68 to 392) is wider than the carved
+   valance/apron below it (`x=96` to `x=364`), leaving two ~28-unit-wide
+   triangular notches directly under the moulding's own corners with no
+   fill at all, just a faint drop-shadow gradient over true transparency
+   (measured alpha 2 to 40 out of 255 in that exact zone). Fixed by
+   widening the top of the apron path (`clock.js` around line 946) out to
+   the moulding's own edges with two small flat "wing" segments before the
+   existing carved curve begins, so the case is solid wood everywhere
+   directly under its own cornice. Re-measured after the fix: alpha 218 to
+   251 in the same zone, fully opaque. The valance's own scalloped bottom
+   edge still legitimately shows background through its wavy cutout further
+   down, that's the intentional carved silhouette, not a bug, and reads
+   correctly once the notches right under the shelf are gone.
+4. **"The timing of strike.mp3 with the chiming is odd, research real
+   cuckoo clock systems first."** Researched via web search first (see
+   `chime.js`'s updated header comment for the summary: the bird and the
+   first note arrive together off the same strike-train stroke). Measured
+   `strike.mp3`'s actual decay by RMS in 50ms windows: -39dB by 250ms, -51dB
+   by 500ms, so its long nominal 1.4s duration is not the issue, it's
+   basically silent well before the file ends. The real problem: the old
+   `gongOffset: 830` fired the gong into a moment of total silence, since
+   the bird had already fully retreated at `birdOut: 520` and its own call
+   audio (465ms) had long finished, so a loud clang landed with nothing
+   on screen causing it, no bird out, no visible hammer, just dead air.
+   Changed `gongOffset` to `460`, so the gong now lands while the bird is
+   still visibly out and the case sway impulse it triggers reads as part
+   of the same strike motion instead of a disconnected afterthought. Self
+   test's strike-sequence checks (call count, gong count, door open/close,
+   call indexes) all still pass with the new timing.
+5. **"All the birds look the same, cardinal should look like a cardinal."**
+   Confirmed real and total, not a wiring slip: `grep -n "birdProfile"
+   src/renderer/clock.js` returns zero matches. `audio.js` has fully correct
+   per-bird sound sets (`BIRDS` map, all 6 profiles), but the visual bird at
+   `clock.js` lines 975 to 1037 is one hardcoded model regardless of
+   `settings.birdProfile`. This is genuinely new character art for 5 species
+   (cardinal, red-winged blackbird, robin, chickadee, mourning dove), not a
+   small fix, so consistent with this project's standing pattern for new
+   visual/character work, a prompt for Opus 5 was written this session
+   (`cuckoosoft-bird-species-visuals-opus-prompt.md`). The user then asked
+   for a second, self-contained prompt for a fresh Opus 5 session that also
+   folds in a bigger ask: **the bird currently reads flat/2D and needs real
+   carved depth, on the shared model all six profiles use, not just new
+   colors on the five new species.** Root cause of the flatness: the bird's
+   `gBird` fill is a plain 2-stop top-to-bottom linear gradient, unlike the
+   pendulum bob's `gBob` (a radial gradient with its hot spot pushed to
+   `cx=0.38 cy=0.28`, off-center toward the light) or the pine cones'
+   `gConeForm` (a separate highlight-to-shadow overlay pass just to sell
+   roundness), both of which read as genuinely round carved wood already in
+   the same file. The old, color-only prompt was deleted and replaced by
+   the merged one. Current, correct, only prompt to hand off:
+   `~/Desktop/markdowns/cuckoosoft-bird-woodwork-depth-opus-prompt.md`.
+   **Not yet built, waiting for the user to run it in a fresh session.**
+6. **"The clock literally stopped ticking."** Not a crash, not a code bug.
+   Confirmed directly from the live `settings.json`: `pendulumRunning` was
+   `false`. Tapping the pendulum bob toggles `pendulumRunning` (`clock.js`'s
+   `pointerup` handler, `d.kind === 'bobClick'`, a real, working, intentional
+   feature mirroring how you'd stop a real clock's pendulum by hand), and
+   the bob's clickable hit region matches its actual visible carved shape
+   closely (no oversized invisible padding, checked directly in the SVG
+   markup), so an accidental stray click while inspecting the case near the
+   bottom (bug 3 above, right in that neighbourhood) is the most likely
+   explanation. Fix for the user: tap the bob again, or use the tray menu's
+   "Start the pendulum" item (`tray.js` already has this, correctly labelled
+   either direction). No code changed for this one, it was working as
+   designed; flagging here in case it recurs and looks alarming again.
+
+## What Was Done In The Previous Session (Opus 5, V3 front end)
 All work in `src/renderer/clock.js`, `panel.html`, `panel.js`, `panel.css`.
 Nothing in `src/main/**`, `src/preload/**`, `audio.js` or `assets/**` was
 touched, per the standing division of labour.
@@ -164,7 +377,7 @@ one-click Restart app button, a Music box toggle, and a Quarter hour toggle.
 Login item support (`launchAtLogin`) confirmed genuinely working against the
 real macOS Login Items list this session, not just the stored preference.
 
-## What Was Done This Session (Claude, CuckooSoft rebrand + V3 backend)
+## What Was Done In An Earlier Session (Claude, CuckooSoft rebrand + V3 backend)
 - **Renamed the project to CuckooSoft and open sourced it.** `package.json`:
   `name` to `cuckoosoft`, `productName` to `CuckooSoft`, `license` from
   `UNLICENSED` to `MIT`, `private` to `false`, `build.appId` to
@@ -619,33 +832,65 @@ real macOS Login Items list this session, not just the stored preference.
 - Self test 20/20, three iterations on screenshots (`/tmp/cuckoo-shots`)
 
 ## Active State
-- **What works:** everything above, verified by the self test (47/48, one known flake).
-  All three V3 character features are built and verified in a live app, not just in the
-  test harness: patina layers measured at a simulated 1111 day age with lopsided
-  counters and confirmed to zero out when switched off, a peek driven and screenshotted
-  frame by frame, a stutter traced over 2.2s of real pendulum angles, the moon checked
-  against reference dates and against today's real phase, and all three popover pills
-  clicked for real and confirmed to write through. Zero renderer and zero panel console
-  errors. All 23 audio files still load and decode, every bird profile resolves
-- **What's broken / WIP:** nothing known
+- **What works:** all six bird species render distinctly with real carved depth, and
+  `settings.birdProfile` now drives the artwork as well as the audio. The whole case has
+  been regilded and rewooded. Verified with the self test at **48/48, zero renderer,
+  panel and process console errors**, and by eyeballing every profile at real size and
+  magnified, at rest and mid call, through a scratch Electron rig that boots the real
+  `clock.js` against a stubbed preload bridge. The old "known flake" did not reproduce
+  this session.
+- **What works (previous sessions):** everything below, verified by the self test.
+  All three V3 character features are built and verified in a live app. This session's
+  four bug fixes (patina floor, filter sharpness at scale, apron notches, gong timing)
+  are all verified with concrete evidence, not just reasoning: real alpha-channel pixel
+  sampling before/after for the transparency fix, a before/after 240% screenshot for the
+  filter fix, and the self test's existing strike-sequence checks (call count, gong
+  count, door open/close) still pass with the new gong offset. Zero renderer and zero
+  panel console errors. All 23 audio files still load and decode, every bird profile
+  resolves
+- **What's broken / WIP:** nothing known. Bug 5 (bird visuals never differing by
+  species, and the shared model reading as 2D) is closed; the prompt that drove it is at
+  `~/Desktop/markdowns/cuckoosoft-bird-woodwork-depth-opus-prompt.md` and is now spent.
+  Two cosmetic judgement calls worth a second opinion from the owner: the cardinal's
+  crest tip rises just above the door arch at full thrust (it reads as the bird leaning
+  out, which is what it is doing, but it does cross the escutcheon), and the gilt cone
+  caps added to the weight hangers sit behind the apron and are effectively never seen.
 - **Not verified by machine:** an actual OS-level click on the menu bar icon or a real
   cursor drag of the grip (Accessibility permission is not granted to this shell). Not
   verified by ear: `wind.mp3`, `music.mp3`, the cuckoo call itself, and most of the 6
   birds' sounds (`tock.mp3` is the one confirmed exception, user-confirmed "perfect"
-  after 4 regeneration rounds), and the quiet `door` cue the peek plays at gain 0.22.
+  after 4 regeneration rounds), and the new gong timing (bug 4) has not been heard live
+  by the user yet, only verified structurally through the self test and the RMS decay
+  measurement reasoning above.
   **Not verifiable at all in a short session: patina at a real age.** Every reading was
-  taken against a synthetic `installedAt`. On a genuinely fresh install it is invisible
-  by design, which is the brief, but it means nobody has yet seen it arrive on its own
+  taken against a synthetic `installedAt`. On a genuinely fresh install the slow curve is
+  still invisible by design, which is the brief, but the new `presence()` floor added
+  this session should now make the toggle itself read as an immediate, visible change
+  even on day one, that part IS verifiable and was (confirmed by the actual live
+  settings file's `installedAt`/`stats` numbers before writing the fix, mathematically:
+  every layer was within 0.1% of its off value pre-fix)
 - **Blockers:** none
 
 ## Next Steps
-1. `npm start` and live with it for a few days. Patina is the one thing that cannot be
-   reviewed in a sitting. If it ever reads as too strong or too weak, the two curves to
-   turn are `aged()` and `handled()` at the top of the patina block in `clock.js`, and
-   the per layer multipliers are all in one place in `applyPatina()`
-2. To see a quirk without waiting a day, open devtools on the clock window and call
+1. `npm start`, open the popover, and switch through all six birds with "Strike now"
+   after each, to look at them on a real screen at whatever size the case is actually
+   run at. Everything in this session was judged from screenshots of the real renderer,
+   which is close but is not the same as living with it. Fastest loop without waiting
+   for the hour, from the clock window's devtools console:
+   `window.cuckoo.set({ birdProfile: 'cardinal' }); window.cuckoo.strike('half')`.
+2. `npm start`, let the clock run a strike, and confirm by ear that the gong (bug 4's
+   fix) now feels connected to the bird's call instead of landing in dead silence. If it
+   still feels off, `T.gongOffset` in `chime.js` is the one number to retune, current
+   value 460ms after the call starts, comment above it has the full reasoning and the
+   measured numbers to reason from.
+3. `npm start` and live with it for a few days. Patina is still the one thing that
+   cannot be fully reviewed in a sitting, though the immediate on/off floor added this
+   session should now be visible right away. If it ever reads as too strong or too weak,
+   the two curves to turn are `aged()` and `handled()`, and the new floor is
+   `presence()`, all at the top of the patina block in `clock.js`'s `applyPatina()`
+4. To see a quirk without waiting a day, open devtools on the clock window and call
    `window.cuckooQuirk({ type: 'peek' })` or `{ type: 'stutter' }`
-3. `npm start`, open the popover, pick a few birds, and hit "Strike now" after each to
+5. `npm start`, open the popover, pick a few birds, and hit "Strike now" after each to
    confirm by ear that the chime actually changes character per bird. Nobody has heard
    any of the 6 birds' calls or tick/tocks yet, all bird audio is measurement verified
    only, except the default `tock.mp3` which is now user-confirmed. Priority listen:
@@ -653,22 +898,53 @@ real macOS Login Items list this session, not just the stored preference.
    the sounds from the same analog regeneration pass that took `tock` 4 rounds to land
    (see the `analogPass*` notes in `assets/sounds/manifest.json` for the playbook if any
    come back flagged)
-4. Click the menu bar icon and confirm the Restart app tile, Music box tile, Quarter
-   hour tile, the Bird picker, and the new Character pills all actually work in the real
-   app, and that the equivalent items in the native tray menu do too
-5. If actually publishing to GitHub: `package.json`/`README.md` have no `repository`,
-   `homepage`, or `bugs` URL yet, there was no real repo URL to put there at the time.
-   Worth adding once the repo exists. The hand built `~/Desktop/Cuckoo Clock.app`
-   launcher (a separate bundle, not part of this repo) was also not renamed to match,
-   left alone since it is a personal dev convenience, not the public project
-6. Optional one liner: `LSUIElement: true` in `package.json` build config would drop the
+6. If actually publishing to GitHub: this is already done, the repo is public at
+   `https://github.com/chrisrobert990-dev/cuckoosoft`, `package.json` has the
+   `repository`/`homepage`/`bugs` fields. The hand built `~/Desktop/Cuckoo Clock.app`
+   launcher (a separate bundle, not part of this repo) was not renamed to match, left
+   alone since it is a personal dev convenience, not the public project
+7. Optional one liner: `LSUIElement: true` in `package.json` build config would drop the
    dock icon and make it a pure menu bar app. Left as is because it changes launch
    behaviour and was not asked for
-7. Remaining polish candidates: more contrast in the folded wing feathers on the door
-   bird, and a look at whether the moon aperture wants to sit somewhere the hands cross
-   less often (it is at the traditional spot, but both hands do pass over it)
 
 ## Important Context
+
+### The visual rules the bird and the gilding are built on (read before touching either)
+- **Light comes from the upper left, everywhere, always.** The filters state it as
+  `feDistantLight azimuth="235"`; everything hand built states it as a highlight offset
+  up and left and a shadow offset down and right. There is no second light source on
+  this clock.
+- **A flat fill never reads as a round mass.** Three techniques do, and all three are
+  now used in several places, so copy them rather than inventing a fourth:
+  1. a radial gradient with its hot spot pushed off centre toward the light
+     (`cx≈0.33 cy≈0.22`), the trick that makes the pendulum bob read as a sphere;
+  2. the silhouette restated just inside itself twice, lit above and shadowed below
+     (the bob's "beaded rim", now generalised as `carved()` inside `buildBird` and as
+     the lit/burnt arcs inside every `gold*` helper);
+  3. one soft directional wash laid over the finished part, after its own colour and
+     detail (`gConeForm` on the cones, `gFormBody` / `gFormOrb` / `gFormWingN` /
+     `gFormWingF` on the bird, `gGiltForm` on gilt, and per slope on the roof).
+- **Turbulence filters are for slabs only.** `fCarved` / `fCarvedDeep` look right on
+  wall panels, mouldings and the case carcase. On anything small or anything that moves
+  they read as dirt and cost a filter pass per frame: that is why the bird has no filter
+  at all, and why both filters were taken off the garland leaves once those leaves had
+  real carving of their own. If something small looks muddy, check whether a turbulence
+  filter is sitting on top of work that no longer needs it.
+- **Shadows are warm.** `#1a0e05` on wood and plumage, `#2c1a03` on gilt. Pure black
+  desaturates whatever is under it, which is what was turning the mourning dove grey and
+  the robin charcoal.
+- **Order matters on painted-on markings.** A black mask, a white cheek, a cap: paint
+  them onto the bare mass, then run the form wash over the top of all of it. Wash first,
+  accents second reads as holes cut in the head.
+- **The bird's motion contract is fixed and separate from its paint.** The frame loop
+  drives `#bird` (opacity and transform), `#birdTilt` (the craning rotate), `#beakLower`
+  (drops on each note) and `#beakMouth` (scales open from a hinge fixed at `y = -9`).
+  Any new species must keep those four ids and keep the gape line at `y = -9`, and
+  `applyBirdProfile()` must re-query the last three after any repaint.
+- **The bird is repainted, never re-rendered per frame.** `applyBirdProfile()` returns
+  immediately unless `settings.birdProfile` actually changed.
+
+### Running it
 - Self test: `CUCKOO_SELFTEST=1 CUCKOO_SHOT_DIR=/tmp/cuckoo-shots ./node_modules/.bin/electron .`
   Normal run: `npm start`. Add `--user-data-dir=/tmp/cuckoo-test-profile` when a live
   instance is holding the single instance lock, otherwise the test exits silently
@@ -716,3 +992,23 @@ real macOS Login Items list this session, not just the stored preference.
   source of truth for which files belong to which bird; `settings.js`'s `BIRD_PROFILES` /
   `BIRD_LABELS` are a separate, parallel list for validation and the tray menu and have to
   be kept in sync by hand, there is no shared import between main and renderer code here
+- **Chromium ignores the SVG `filterRes` attribute.** Tried it as the first fix for the
+  scaling blur bug this session (a real SVG 1.1 attribute meant for exactly this), a
+  before/after screenshot at 240% showed zero difference, confirmed by testing rather
+  than assumed. The actual fix for filter sharpness at scale is raising `baseFrequency`/
+  `numOctaves` on the `feTurbulence` filters themselves, not any filter-resolution knob.
+- **Clicking the pendulum bob toggles `pendulumRunning`**, a real feature (`clock.js`'s
+  `pointerup` handler, `bobClick` kind, `moved < 6` px counts as a click not a drag), not
+  a bug. If the clock "just stops ticking" with no error, check `pendulumRunning` in the
+  live `settings.json` before assuming something crashed, it is very plausibly a stray
+  click near the bottom of the case. Tray menu already has a correctly-labelled "Start/
+  Stop the pendulum" item as the reliable fix, no code change was needed for this.
+- The self test now takes a 6th screenshot, `06-scaled-240` (added inside the resize
+  loop in `selftest.js`, only at the `scale === 2.4` iteration), specifically so a future
+  scaling regression like this session's blur/notch bugs shows up in review without
+  needing a manual repro.
+- `chime.js`'s `T.gongOffset` changed from 830 to 460 this session. If it ever needs
+  retuning again: `strike.mp3` decays to RMS -50dB by 500ms (measured, not assumed), the
+  bird's own call audio (`cuckoo.mp3`) is 465ms and `birdOut` is 520ms, so anything
+  placed before about 520ms lands while the bird is still visibly out, and anything
+  placed after that lands in silence with nothing on screen to justify the sound.
